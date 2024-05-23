@@ -4,27 +4,27 @@
 	// Primary tokens
 
 	// Text
-	--color-text-dark: #000000;
-	--color-text-base: #333333;
-	--color-text-light: #666666;
-	--color-text-lighter: #999999;
-	--color-text-xlight: #CCCCCC;
-	--color-text-danger: #FF0000;
+	--color-text-dark: #1a1a1a; // Dark gray
+	--color-text-base: #e0e0e0; // Light gray
+	--color-text-light: #c0c0c0; // Lighter gray
+	--color-text-lighter: #a0a0a0; // Even lighter gray
+	--color-text-xlight: #808080; // Lightest gray
+	--color-text-danger: #ff4c4c; // Red for danger
 
 	// Foreground
-	--color-foreground-xdark: #000000;
-	--color-foreground-dark: #333333;
-	--color-foreground-base: #666666;
-	--color-foreground-light: #999999;
-	--color-foreground-xlight: #CCCCCC;
+	--color-foreground-xdark: #e0e0e0; // Light gray
+	--color-foreground-dark: #a0a0a0; // Medium gray
+	--color-foreground-base: #707070; // Base gray
+	--color-foreground-light: #606060; // Light gray
+	--color-foreground-xlight: #505050; // Lightest gray
 
 	// Background
-	--color-background-dark: #000000;
-	--color-background-medium: #333333;
-	--color-background-base: #666666;
-	--color-background-light-base: #999999;
-	--color-background-light: #CCCCCC;
-	--color-background-xlight: #FFFFFF;
+	--color-background-dark: #0d0d0d; // Dark black
+	--color-background-medium: #303030; // Medium black
+	--color-background-base: #404040; // Base black
+	--color-background-light-base: #505050; // Light base black
+	--color-background-light: #606060; // Light black
+	--color-background-xlight: #707070; // Lightest black
 
 	--box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1);
 	--box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.2);
@@ -33,206 +33,206 @@
 	// Secondary tokens
 
 	// LangChain
-	--color-lm-chat-messages-background: #000000;
-	--color-lm-chat-bot-background: #333333;
-	--color-lm-chat-bot-border: #444444;
-	--color-lm-chat-user-background: #FFFFFF;
-	--color-lm-chat-user-border: #FFFFFF;
+	--color-lm-chat-messages-background: #303030; // Medium black
+	--color-lm-chat-bot-background: #202020; // Darker black
+	--color-lm-chat-bot-border: #181818; // Darkest black
+	--color-lm-chat-user-background: #d3d3d3; // Light gray
+	--color-lm-chat-user-border: #b0b0b0; // Border gray
 
 	// Canvas
-	--color-canvas-background: #000000;
-	--color-canvas-background-h: 0; // Used for connectors labels background
-	--color-canvas-background-s: 0%;
-	--color-canvas-background-l: 0%;
-	--color-canvas-dot: #666666;
-	--color-canvas-read-only-line: #888888;
-	--color-canvas-node-background: #000000;
-	--color-canvas-node-pinned-border: #888888;
-	--color-canvas-selected: rgba(255, 255, 255, 0.25);
-	--node-type-main-color: #333333;
+	--color-canvas-background: #303030; // Medium black
+	--color-canvas-background-h: var(--prim-gray-h); // Used for connectors labels background
+	--color-canvas-background-s: 1%;
+	--color-canvas-background-l: 18%;
+	--color-canvas-dot: #404040; // Dots gray
+	--color-canvas-read-only-line: #303030; // Read-only line black
+	--color-canvas-node-background: #1a1a1a; // Node background dark gray
+	--color-canvas-node-pinned-border: #ff9900; // Pinned border orange
+	--color-canvas-selected: rgba(255, 255, 255, 0.025); // Selected node highlight
+	--node-type-main-color: #a0a0a0; // Main node gray
 
 	// Sticky
-	--color-sticky-background: #444444;
-	--color-sticky-border: #555555;
-	--color-sticky-font: #FFFFFF;
-	--color-sticky-code-font: #888888;
-	--color-sticky-code-background: rgba(0, 0, 0, 0.1);
+	--color-sticky-background: #333333; // Dark sticky background
+	--color-sticky-border: #4d4d4d; // Sticky border gray
+	--color-sticky-font: #ffffff; // White font
+	--color-sticky-code-font: #ffcc00; // Code font yellow
+	--color-sticky-code-background: rgba(255, 255, 255, 0.01); // Code background with opacity
 
-	--color-sticky-background-1: #444444;
-	--color-sticky-border-1: #555555;
-	--color-sticky-background-2: #555555;
-	--color-sticky-border-2: #666666;
-	--color-sticky-background-3: #666666;
-	--color-sticky-border-3: #777777;
-	--color-sticky-background-4: #777777;
-	--color-sticky-border-4: #888888;
-	--color-sticky-background-5: #888888;
-	--color-sticky-border-5: #999999;
-	--color-sticky-background-6: #999999;
-	--color-sticky-border-6: #AAAAAA;
-	--color-sticky-background-7: #CCCCCC;
+	--color-sticky-background-1: #333333;
+	--color-sticky-border-1: #4d4d4d;
+	--color-sticky-background-2: #4d4d4d;
+	--color-sticky-border-2: #595959;
+	--color-sticky-background-3: #595959;
+	--color-sticky-border-3: #666666;
+	--color-sticky-background-4: #666666;
+	--color-sticky-border-4: #737373;
+	--color-sticky-background-5: #737373;
+	--color-sticky-border-5: #808080;
+	--color-sticky-background-6: #808080;
+	--color-sticky-border-6: #8c8c8c;
+	--color-sticky-background-7: #8c8c8c;
 	--color-sticky-border-7: #999999;
 
 	// Expressions, autocomplete, infobox
-	--color-valid-resolvable-foreground: #00FF00;
-	--color-valid-resolvable-background: rgba(0, 255, 0, 0.25);
-	--color-invalid-resolvable-foreground: #FF0000;
-	--color-invalid-resolvable-background: rgba(255, 0, 0, 0.2);
-	--color-pending-resolvable-foreground: #333333;
-	--color-pending-resolvable-background: rgba(0, 0, 0, 0.1);
-	--color-expression-editor-background: #888888;
-	--color-expression-syntax-example: #666666;
-	--color-autocomplete-item-selected: #888888;
-	--color-autocomplete-section-header-border: #333333;
-	--color-infobox-background: #999999;
-	--color-infobox-examples-border-color: #666666;
+	--color-valid-resolvable-foreground: #00ff00; // Green for valid
+	--color-valid-resolvable-background: rgba(0, 255, 0, 0.025); // Green background with opacity
+	--color-invalid-resolvable-foreground: #ff4c4c; // Red for invalid
+	--color-invalid-resolvable-background: rgba(255, 76, 76, 0.02); // Red background with opacity
+	--color-pending-resolvable-foreground: #e0e0e0; // Pending gray
+	--color-pending-resolvable-background: rgba(224, 224, 224, 0.01); // Pending background with opacity
+	--color-expression-editor-background: #303030; // Expression editor background
+	--color-expression-syntax-example: #404040; // Syntax example gray
+	--color-autocomplete-item-selected: #808080; // Autocomplete item selected gray
+	--color-autocomplete-section-header-border: #303030; // Autocomplete section header border
+	--color-infobox-background: #505050; // Infobox background
+	--color-infobox-examples-border-color: #404040; // Infobox examples border
 
 	// Code
-	--color-code-tags-string: #00FF00;
-	--color-code-tags-primitive: #FF0000;
-	--color-code-tags-keyword: #0000FF;
-	--color-code-tags-operator: #FFFF00;
-	--color-code-tags-variable: #00FFFF;
-	--color-code-tags-definition: #FF00FF;
-	--color-json-default: #FFFFFF;
-	--color-json-null: #FF0000;
-	--color-json-boolean: #00FF00;
-	--color-json-number: #00FF00;
-	--color-json-string: #FFFFFF;
-	--color-json-key: #000000;
-	--color-json-brackets: #666666;
-	--color-json-brackets-hover: #FF00FF;
-	--color-json-line: #000000;
-	--color-json-highlight: #666666;
-	--color-code-background: #888888;
-	--color-code-background-readonly: #CCCCCC;
-	--color-code-lineHighlight: #CCCCCC;
-	--color-code-foreground: #FFFFFF;
-	--color-code-caret: #000000;
-	--color-code-selection: rgba(255, 255, 255, 0.4);
-	--color-code-gutterBackground: #666666;
-	--color-code-gutterForeground: #999999;
-	--color-code-tags-comment: #000000;
+	--color-code-tags-string: #ffcc00; // String yellow
+	--color-code-tags-primitive: #b3b300; // Primitive yellow
+	--color-code-tags-keyword: #ff6600; // Keyword orange
+	--color-code-tags-operator: #e0e0e0; // Operator gray
+	--color-code-tags-variable: #00ccff; // Variable cyan
+	--color-code-tags-definition: #8080ff; // Definition blue
+	--color-json-default: #808080; // JSON default gray
+	--color-json-null: #ff4c4c; // JSON null red
+	--color-json-boolean: #00cc00; // JSON boolean green
+	--color-json-number: #00cc00; // JSON number green
+	--color-json-string: #808080; // JSON string gray
+	--color-json-key: #1a1a1a; // JSON key dark gray
+	--color-json-brackets: #404040; // JSON brackets gray
+	--color-json-brackets-hover: #8080ff; // JSON brackets hover blue
+	--color-json-line: #e0e0e0; // JSON line gray
+	--color-json-highlight: #404040; // JSON highlight gray
+	--color-code-background: #303030; // Code background
+	--color-code-background-readonly: #505050; // Code background readonly
+	--color-code-lineHighlight: #505050; // Code line highlight
+	--color-code-foreground: #0d0d0d; // Code foreground
+	--color-code-caret: #0d0d0d; // Code caret
+	--color-code-selection: rgba(128, 128, 255, 0.04); // Code selection with opacity
+	--color-code-gutterBackground: #404040; // Code gutter background
+	--color-code-gutterForeground: #c0c0c0; // Code gutter foreground
+	--color-code-tags-comment: #e0e0e0; // Code tags comment gray
 
 	// Variables
-	--color-variables-usage-font: #00FF00;
-	--color-variables-usage-syntax-bg: rgba(0, 255, 0, 0.25);
+	--color-variables-usage-font: #00ff00; // Variables usage font green
+	--color-variables-usage-syntax-bg: rgba(0, 255, 0, 0.025); // Variables usage syntax background with opacity
 
 	// Button primary
-	--color-button-primary-focus-outline: rgba(255, 255, 255, 0.35);
-	--color-button-primary-disabled-font: rgba(0, 0, 0, 0.3);
+	--color-button-primary-focus-outline: rgba(255, 255, 255, 0.035); // Button primary focus outline
+	--color-button-primary-disabled-font: rgba(0, 0, 0, 0.03); // Button primary disabled font
 	--color-button-primary-disabled-border: transparent;
-	--color-button-primary-disabled-background: rgba(255, 255, 255, 0.5);
+	--color-button-primary-disabled-background: rgba(255, 255, 255, 0.05); // Button primary disabled background
 
 	// Button secondary
-	--color-button-secondary-font: #FFFFFF;
-	--color-button-secondary-border: #FFFFFF;
+	--color-button-secondary-font: #0d0d0d; // Button secondary font
+	--color-button-secondary-border: #0d0d0d; // Button secondary border
 	--color-button-secondary-background: transparent;
-	--color-button-secondary-hover-active-focus-font: #FFFFFF;
+	--color-button-secondary-hover-active-focus-font: #00ccff; // Button secondary hover/active/focus font
 	--color-button-secondary-hover-background: transparent;
-	--color-button-secondary-active-focus-background: rgba(255, 255, 255, 0.1);
-	--color-button-secondary-focus-outline: rgba(255, 255, 255, 0.35);
-	--color-button-secondary-disabled-font: rgba(0, 0, 0, 0.3);
-	--color-button-secondary-disabled-border: rgba(0, 0, 0, 0.3);
+	--color-button-secondary-active-focus-background: rgba(0, 255, 255, 0.01); // Button secondary active/focus background
+	--color-button-secondary-focus-outline: rgba(0, 255, 255, 0.035); // Button secondary focus outline
+	--color-button-secondary-disabled-font: rgba(0, 0, 0, 0.03); // Button secondary disabled font
+	--color-button-secondary-disabled-border: rgba(0, 0, 0, 0.03); // Button secondary disabled border
 
 	// Text button
-	--color-text-button-secondary-font: #999999;
+	--color-text-button-secondary-font: #c0c0c0; // Text button secondary font
 
 	// Node Creator Button
 	--color-button-node-creator-border-font: var(--color-button-secondary-font);
 	--color-button-node-creator-hover-font: var(--color-button-secondary-hover-active-focus-font);
-	--color-button-node-creator-hover-border: #FFFFFF;
-	--color-button-node-creator-background: rgba(255, 255, 255, 0.1);
+	--color-button-node-creator-hover-border: #00ccff; // Node creator button hover border
+	--color-button-node-creator-background: rgba(0, 255, 255, 0.01); // Node creator button background
 
 	// Table
-	--color-table-header-background: #CCCCCC;
-	--color-table-row-background: #000000;
-	--color-table-row-even-background: #888888;
-	--color-table-row-hover-background: #CCCCCC;
-	--color-table-row-highlight-background: #FFFF00;
+	--color-table-header-background: #505050; // Table header background
+	--color-table-row-background: #303030; // Table row background
+	--color-table-row-even-background: #404040; // Table row even background
+	--color-table-row-hover-background: #505050; // Table row hover background
+	--color-table-row-highlight-background: #ff9900; // Table row highlight background
 
 	// Notification
-	--color-notification-background: #CCCCCC;
+	--color-notification-background: #505050; // Notification background
 
 	// Execution card
-	--execution-card-background-hover: var(--color-foreground-base);
+	--execution-card-background-hover: var(--color-foreground-base); // Execution card background hover
 
 	// NDV
-	--color-run-data-background: #888888;
-	--color-ndv-droppable-parameter: #FFFFFF;
-	--color-ndv-droppable-parameter-background: rgba(255, 255, 255, 0.1);
-	--color-ndv-droppable-parameter-active-background: rgba(255, 255, 255, 0.15);
-	--color-ndv-back-font: #000000;
-	--color-ndv-output-error-message: #FF0000;
+	--color-run-data-background: #303030; // NDV run data background
+	--color-ndv-droppable-parameter: #00ccff; // NDV droppable parameter
+	--color-ndv-droppable-parameter-background: rgba(0, 204, 255, 0.01); // NDV droppable parameter background
+	--color-ndv-droppable-parameter-active-background: rgba(0, 255, 255, 0.015); // NDV droppable parameter active background
+	--color-ndv-back-font: #ffffff; // NDV back font
+	--color-ndv-output-error-message: #ff4c4c; // NDV output error message
 
 	// Notice
-	--color-notice-warning-border: #FFFF00;
-	--color-notice-warning-background: rgba(255, 255, 0, 0.2);
-	--color-notice-font: #000000;
+	--color-notice-warning-border: #ffcc00; // Notice warning border
+	--color-notice-warning-background: rgba(255, 204, 0, 0.02); // Notice warning background
+	--color-notice-font: #ffffff; // Notice font
 
 	// Callout
-	--color-callout-info-border: #333333;
-	--color-callout-info-background: #CCCCCC;
-	--color-callout-info-font: #000000;
-	--color-callout-success-border: #00FF00;
-	--color-callout-success-background: rgba(0, 255, 0, 0.25);
-	--color-callout-success-font: #000000;
-	--color-callout-warning-border: #FFFF00;
-	--color-callout-warning-background: rgba(255, 255, 0, 0.2);
-	--color-callout-warning-font: #000000;
-	--color-callout-danger-border: #FF0000;
-	--color-callout-danger-background: rgba(255, 0, 0, 0.2);
-	--color-callout-danger-font: #000000;
-	--color-callout-secondary-border: #FFFFFF;
-	--color-callout-secondary-background: rgba(255, 255, 255, 0.25);
-	--color-callout-secondary-font: #000000;
+	--color-callout-info-border: #707070; // Callout info border
+	--color-callout-info-background: #505050; // Callout info background
+	--color-callout-info-font: #ffffff; // Callout info font
+	--color-callout-success-border: #00ff00; // Callout success border
+	--color-callout-success-background: rgba(0, 255, 0, 0.025); // Callout success background
+	--color-callout-success-font: #ffffff; // Callout success font
+	--color-callout-warning-border: #ff9900; // Callout warning border
+	--color-callout-warning-background: rgba(255, 153, 0, 0.02); // Callout warning background
+	--color-callout-warning-font: #ffffff; // Callout warning font
+	--color-callout-danger-border: #ff4c4c; // Callout danger border
+	--color-callout-danger-background: rgba(255, 76, 76, 0.02); // Callout danger background
+	--color-callout-danger-font: #ffffff; // Callout danger font
+	--color-callout-secondary-border: #00ccff; // Callout secondary border
+	--color-callout-secondary-background: rgba(0, 204, 255, 0.025); // Callout secondary background
+	--color-callout-secondary-font: #ffffff; // Callout secondary font
 
 	// Dialogs and overlays
-	--color-dialog-background: #888888;
-	--color-dialog-overlay-background: rgba(255, 255, 255, 0.75);
-	--color-dialog-overlay-background-dark: rgba(255, 255, 255, 0.75);
+	--color-dialog-background: #303030; // Dialog background
+	--color-dialog-overlay-background: rgba(0, 0, 0, 0.75); // Dialog overlay background
+	--color-dialog-overlay-background-dark: rgba(0, 0, 0, 0.75); // Dialog overlay background dark
 
 	// Avatar
-	--color-avatar-font: #000000;
+	--color-avatar-font: #ffffff; // Avatar font
 
 	// Value Survey
-	--color-value-survey-background: #CCCCCC;
-	--color-value-survey-font: #000000;
+	--color-value-survey-background: #505050; // Value survey background
+	--color-value-survey-font: #ffffff; // Value survey font
 
 	// Switch (Activation, boolean)
-	--color-switch-background: #000000;
-	--color-switch-border-color: #666666;
-	--color-switch-toggle: #FFFFFF;
+	--color-switch-background: #303030; // Switch background
+	--color-switch-border-color: #404040; // Switch border color
+	--color-switch-toggle: #ffffff; // Switch toggle
 
 	// Action Dropdown
-	--color-action-dropdown-item-active-background: var(--color-background-xlight);
+	--color-action-dropdown-item-active-background: var(--color-background-xlight); // Action dropdown item active background
 
 	// Input Triple
-	--color-background-input-triple: #888888;
+	--color-background-input-triple: #303030; // Input triple background
 
 	// Node error
-	--color-node-error-output-text-color: #FF0000;
+	--color-node-error-output-text-color: #ff4c4c; // Node error output text color
 
 	// MFA Recovery codes
-	--color-mfa-recovery-code-background: var(--color-background-xlight);
-	--color-mfa-recovery-code-color: var(--color-text-dark);
-	--color-mfa-lose-access-text-color: #FF0000;
+	--color-mfa-recovery-code-background: var(--color-background-xlight); // MFA recovery code background
+	--color-mfa-recovery-code-color: var(--color-text-dark); // MFA recovery code color
+	--color-mfa-lose-access-text-color: #ff4c4c; // MFA lose access text color
 
 	// Various
-	--color-info-tint-1: #333333;
-	--color-info-tint-2: #CCCCCC;
-	--border-color-base: var(--color-foreground-base);
-	--border-color-light: var(--color-foreground-light);
-	--border-base: var(--border-width-base) var(--border-style-base) var(--color-foreground-base);
-	--node-type-supplemental-label-color-l: 100%;
+	--color-info-tint-1: #707070; // Info tint 1
+	--color-info-tint-2: #505050; // Info tint 2
+	--border-color-base: var(--color-foreground-base); // Border color base
+	--border-color-light: var(--color-foreground-light); // Border color light
+	--border-base: var(--border-width-base) var(--border-style-base) var(--color-foreground-base); // Border base
+	--node-type-supplemental-label-color-l: 100%; // Node type supplemental label color lightness
 	--node-type-supplemental-label-color: hsl(
 		var(--node-type-supplemental-label-color-h),
 		var(--node-type-supplemental-label-color-s),
 		var(--node-type-supplemental-label-color-l)
-	);
-	--color-configurable-node-name: var(--color-text-lighter);
-	--color-secondary-link: #FFFFFF;
-	--color-secondary-link-hover: #CCCCCC;
+	); // Node type supplemental label color
+	--color-configurable-node-name: var(--color-text-lighter); // Configurable node name color
+	--color-secondary-link: #00ccff; // Secondary link color
+	--color-secondary-link-hover: #00ccff; // Secondary link hover color
 }
 
 body[data-theme='dark'] {

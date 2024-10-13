@@ -66,7 +66,6 @@
 	// Secondary tokens
 
 	// LangChain
-<<<<<<< HEAD
 	--color-lm-chat-messages-background: #cccccc;
 	--color-lm-chat-bot-background: #ffffff;
 	--color-lm-chat-bot-color: #000000;
@@ -84,36 +83,6 @@
 	--color-canvas-node-pinned-border: #666666;
 	--color-canvas-selected: #cccccc;
 	--node-type-main-color: #000000;
-=======
-	--color-lm-chat-messages-background: var(--color-background-base);
-	--color-lm-chat-bot-background: var(--prim-gray-0);
-	--color-lm-chat-user-background: var(--prim-color-alt-a);
-	--color-lm-chat-user-color: var(--color-text-xlight);
-
-	// Canvas
-	--color-canvas-background: var(--prim-gray-10);
-	--color-canvas-background-h: var(--prim-gray-h); // Used for connectors labels background
-	--color-canvas-background-s: 47%;
-	--color-canvas-background-l: 99%;
-	--color-canvas-dot: var(--prim-gray-120);
-	--color-canvas-read-only-line: var(--prim-gray-30);
-	--color-canvas-selected: var(--prim-gray-70);
-	--color-canvas-selected-transparent: hsla(var(--prim-gray-h), 47%, 30%, 0.1);
-	--color-canvas-label-background: hsla(
-		var(--color-canvas-background-h),
-		var(--color-canvas-background-s),
-		var(--color-canvas-background-l),
-		0.85
-	);
-
-	// Nodes
-	--color-node-background: var(--color-background-xlight);
-	--color-node-executing-background: var(--color-primary-tint-3);
-	--color-node-executing-other-background: var(--color-primary-tint-3);
-	--color-node-pinned-border: var(--color-secondary);
-	--color-node-running-border: var(--color-primary);
-	--node-type-main-color: var(--prim-gray-490);
->>>>>>> 4f27b39b45b58779d363980241e6e5e11b58f5da
 
 	// Sticky
 	--color-sticky-background: #333333;
@@ -188,7 +157,6 @@
 	--color-node-icon-crimson: #772244;
 
 	// Expressions, autocomplete, infobox
-<<<<<<< HEAD
 	--color-valid-resolvable-foreground: #000000;
 	--color-valid-resolvable-background: #4d4d4d;
 	--color-invalid-resolvable-foreground: #ff4c4c;
@@ -228,50 +196,6 @@
 	--color-code-gutterBackground: #ffffff;
 	--color-code-gutterForeground: #cccccc;
 	--color-code-tags-comment: #e0e0e0;
-=======
-	--color-valid-resolvable-foreground: var(--prim-color-alt-a);
-	--color-valid-resolvable-background: var(--prim-color-alt-a-tint-500);
-	--color-invalid-resolvable-foreground: var(--prim-color-alt-c);
-	--color-invalid-resolvable-background: var(--prim-color-alt-c-tint-450);
-	--color-pending-resolvable-foreground: var(--color-text-base);
-	--color-pending-resolvable-background: var(--prim-gray-40);
-	--color-expression-editor-background: var(--prim-gray-0);
-	--color-expression-editor-modal-background: var(--color-background-base);
-	--color-expression-syntax-example: var(--prim-gray-40);
-	--color-autocomplete-item-selected: var(--color-secondary);
-	--color-autocomplete-section-header-border: var(--color-foreground-light);
-	--color-infobox-background: var(--color-background-light-base);
-	--color-infobox-examples-border-color: var(--color-foreground-light);
-
-	// Code
-	--color-code-tags-string: var(--prim-color-alt-f);
-	--color-code-tags-primitive: var(--prim-color-alt-b-shade-100);
-	--color-code-tags-keyword: var(--prim-color-alt-g);
-	--color-code-tags-operator: var(--prim-color-alt-h);
-	--color-code-tags-variable: var(--prim-color-alt-c-shade-100);
-	--color-code-tags-definition: var(--prim-color-alt-e-shade-150);
-	--color-json-default: var(--prim-color-secondary-shade-100);
-	--color-json-null: var(--prim-color-alt-c);
-	--color-json-boolean: var(--prim-color-alt-a);
-	--color-json-number: var(--prim-color-alt-a);
-	--color-json-string: var(--prim-color-secondary-shade-100);
-	--color-json-key: var(--prim-gray-670);
-	--color-json-brackets: var(--prim-gray-670);
-	--color-json-brackets-hover: var(--prim-color-alt-e);
-	--color-json-line: var(--prim-gray-200);
-	--color-json-highlight: var(--prim-gray-70);
-	--color-code-background: var(--prim-gray-0);
-	--color-code-background-readonly: var(--prim-gray-40);
-	--color-code-lineHighlight: var(--prim-gray-40);
-	--color-code-foreground: var(--prim-gray-670);
-	--color-code-caret: var(--prim-gray-420);
-	--color-code-selection: var(--prim-gray-120);
-	--color-code-gutterBackground: var(--prim-gray-0);
-	--color-code-gutterForeground: var(--prim-gray-320);
-	--color-code-tags-comment: var(--prim-gray-420);
-	--color-line-break: var(--prim-gray-320);
-	--color-code-line-break: var(--prim-color-secondary-tint-200);
->>>>>>> 4f27b39b45b58779d363980241e6e5e11b58f5da
 
 	// Variables
 	--color-variables-usage-font: #000000;
@@ -327,7 +251,6 @@
 	// Notification
 	--color-notification-background: #666666;
 
-<<<<<<< HEAD
 	// Execution card
 	--execution-card-border-success: #333333;
 	--execution-card-border-error: #ff4c4c;
@@ -343,27 +266,6 @@
 	--color-ndv-droppable-parameter-active-background: rgba(0, 255, 255, 0.015);
 	--color-ndv-back-font: #ffffff;
 	--color-ndv-output-error-message: #ff4c4c;
-=======
-	// Execution
-	--execution-card-border-new: var(--prim-gray-200);
-	--execution-card-border-success: var(--prim-color-alt-a-tint-300);
-	--execution-card-border-error: var(--prim-color-alt-c-tint-250);
-	--execution-card-border-waiting: var(--prim-color-secondary-tint-300);
-	--execution-card-border-running: var(--prim-color-alt-b-tint-250);
-	--execution-card-border-unknown: var(--prim-gray-120);
-	--execution-card-background-hover: var(--color-foreground-light);
-	--execution-card-text-waiting: var(--color-secondary);
-	--execution-selector-background: var(--color-background-dark);
-	--execution-selector-text: var(--color-text-xlight);
-	--execution-select-all-text: var(--color-danger);
-
-	// NDV
-	--color-run-data-background: var(--color-background-base);
-	--color-ndv-droppable-parameter: var(--color-secondary);
-	--color-ndv-droppable-parameter-background: var(--prim-color-secondary-alpha-010);
-	--color-ndv-droppable-parameter-active-background: var(--prim-color-alt-a-alpha-015);
-	--color-ndv-back-font: var(--prim-gray-0);
->>>>>>> 4f27b39b45b58779d363980241e6e5e11b58f5da
 
 	// Notice
 	--color-notice-warning-border: #ff9900;
@@ -401,15 +303,9 @@
 	// Avatar
 	--color-avatar-font: #000000;
 
-<<<<<<< HEAD
 	// Value Survey
 	--color-value-survey-background: #666666;
 	--color-value-survey-font: #ffffff;
-=======
-	// NPS Survey
-	--color-nps-survey-background: var(--prim-gray-740);
-	--color-nps-survey-font: var(--prim-gray-0);
->>>>>>> 4f27b39b45b58779d363980241e6e5e11b58f5da
 
 	// Action Dropdown
 	--color-action-dropdown-item-active-background: #cccccc;

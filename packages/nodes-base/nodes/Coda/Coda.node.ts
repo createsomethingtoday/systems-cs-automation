@@ -8,7 +8,7 @@ import type {
 	INodeTypeDescription,
 	JsonObject,
 } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeConnectionType, NodeApiError } from 'n8n-workflow';
 import { codaApiRequest, codaApiRequestAllItems } from './GenericFunctions';
 import { tableFields, tableOperations } from './TableDescription';
 import { formulaFields, formulaOperations } from './FormulaDescription';
@@ -27,8 +27,8 @@ export class Coda implements INodeType {
 		defaults: {
 			name: 'Coda',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'codaApi',
@@ -435,7 +435,6 @@ export class Coda implements INodeType {
 							});
 							continue;
 						}
-						if (error instanceof NodeApiError) throw error;
 						throw new NodeApiError(this.getNode(), error as JsonObject);
 					}
 				}
@@ -803,7 +802,6 @@ export class Coda implements INodeType {
 							});
 							continue;
 						}
-						if (error instanceof NodeApiError) throw error;
 						throw new NodeApiError(this.getNode(), error as JsonObject);
 					}
 				}

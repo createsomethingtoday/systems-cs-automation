@@ -1,6 +1,11 @@
 import type { Scope } from '@n8n/permissions';
 
 export const GLOBAL_OWNER_SCOPES: Scope[] = [
+	'annotationTag:create',
+	'annotationTag:read',
+	'annotationTag:update',
+	'annotationTag:delete',
+	'annotationTag:list',
 	'auditLogs:manage',
 	'banner:dismiss',
 	'credential:create',
@@ -9,17 +14,11 @@ export const GLOBAL_OWNER_SCOPES: Scope[] = [
 	'credential:delete',
 	'credential:list',
 	'credential:share',
+	'credential:move',
 	'communityPackage:install',
 	'communityPackage:uninstall',
 	'communityPackage:update',
 	'communityPackage:list',
-	'eventBusEvent:create',
-	'eventBusEvent:read',
-	'eventBusEvent:update',
-	'eventBusEvent:delete',
-	'eventBusEvent:list',
-	'eventBusEvent:query',
-	'eventBusEvent:create',
 	'eventBusDestination:create',
 	'eventBusDestination:read',
 	'eventBusDestination:update',
@@ -69,6 +68,7 @@ export const GLOBAL_OWNER_SCOPES: Scope[] = [
 	'workflow:list',
 	'workflow:share',
 	'workflow:execute',
+	'workflow:move',
 	'workersView:manage',
 	'project:list',
 	'project:create',
@@ -80,8 +80,11 @@ export const GLOBAL_OWNER_SCOPES: Scope[] = [
 export const GLOBAL_ADMIN_SCOPES = GLOBAL_OWNER_SCOPES.concat();
 
 export const GLOBAL_MEMBER_SCOPES: Scope[] = [
-	'eventBusEvent:list',
-	'eventBusEvent:read',
+	'annotationTag:create',
+	'annotationTag:read',
+	'annotationTag:update',
+	'annotationTag:delete',
+	'annotationTag:list',
 	'eventBusDestination:list',
 	'eventBusDestination:test',
 	'tag:create',

@@ -14,6 +14,7 @@ export const useRBACStore = defineStore(STORES.RBAC, () => {
 	const scopesByResourceId = ref<Record<Resource, Record<string, Scope[]>>>({
 		workflow: {},
 		tag: {},
+		annotationTag: {},
 		user: {},
 		credential: {},
 		variable: {},
@@ -24,7 +25,6 @@ export const useRBACStore = defineStore(STORES.RBAC, () => {
 		orchestration: {},
 		workersView: {},
 		eventBusDestination: {},
-		eventBusEvent: {},
 		auditLogs: {},
 		banner: {},
 		communityPackage: {},
@@ -32,6 +32,7 @@ export const useRBACStore = defineStore(STORES.RBAC, () => {
 		license: {},
 		logStreaming: {},
 		saml: {},
+		securityAudit: {},
 	});
 
 	function addGlobalRole(role: IRole) {

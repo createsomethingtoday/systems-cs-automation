@@ -48,7 +48,7 @@ export class N8nStructuredOutputParser<T extends z.ZodTypeAny> extends Structure
 		sandboxedSchema: JavaScriptSandbox,
 		nodeVersion: number,
 	): Promise<StructuredOutputParser<z.ZodType<object, z.ZodTypeDef, object>>> {
-		const zodSchema = (await sandboxedSchema.runCode()) as z.ZodSchema<object>;
+		const zodSchema = await sandboxedSchema.runCode<z.ZodSchema<object>>();
 
 		let returnSchema: z.ZodSchema<object>;
 		if (nodeVersion === 1) {
@@ -129,8 +129,6 @@ export class OutputParserStructured implements INodeType {
 			},
 			{
 				...inputSchemaField,
-				displayName: 'JSON Schema',
-				description: 'JSON Schema to structure and validate the output against',
 				default: `{
 	"type": "object",
 	"properties": {

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { PropType } from 'vue';
 import type { ExternalSecretsProvider } from '@/Interface';
 import ExternalSecretsProviderImage from '@/components/ExternalSecretsProviderImage.ee.vue';
 import ExternalSecretsProviderConnectionSwitch from '@/components/ExternalSecretsProviderConnectionSwitch.ee.vue';
@@ -13,12 +12,9 @@ import { DateTime } from 'luxon';
 import { computed, nextTick, onMounted, toRef } from 'vue';
 import { isDateObject } from '@/utils/typeGuards';
 
-const props = defineProps({
-	provider: {
-		type: Object as PropType<ExternalSecretsProvider>,
-		required: true,
-	},
-});
+const props = defineProps<{
+	provider: ExternalSecretsProvider;
+}>();
 
 const externalSecretsStore = useExternalSecretsStore();
 const i18n = useI18n();
@@ -137,6 +133,15 @@ async function onActionDropdownClick(id: string) {
 					</span>
 				</n8n-text>
 			</div>
+			<div v-if="provider.name === 'infisical'">
+				<font-awesome-icon
+					:class="$style['warningTriangle']"
+					icon="exclamation-triangle"
+				></font-awesome-icon>
+				<N8nBadge class="mr-xs" theme="tertiary" bold data-test-id="card-badge">
+					{{ i18n.baseText('settings.externalSecrets.card.deprecated') }}
+				</N8nBadge>
+			</div>
 			<div v-if="canConnect" :class="$style.cardActions">
 				<ExternalSecretsProviderConnectionSwitch
 					:provider="provider"
@@ -186,5 +191,10 @@ async function onActionDropdownClick(id: string) {
 	flex-direction: row;
 	align-items: center;
 	margin-left: var(--spacing-s);
+}
+
+.warningTriangle {
+	color: var(--color-warning);
+	margin-right: var(--spacing-2xs);
 }
 </style>

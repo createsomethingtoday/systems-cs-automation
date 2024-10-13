@@ -24,9 +24,11 @@ export class NDV extends BasePage {
 		editPinnedDataButton: () => cy.getByTestId('ndv-edit-pinned-data'),
 		pinnedDataEditor: () => this.getters.outputPanel().find('.cm-editor .cm-scroller .cm-content'),
 		runDataPaneHeader: () => cy.getByTestId('run-data-pane-header'),
+		aiOutputModeToggle: () => cy.getByTestId('ai-output-mode-select'),
 		nodeOutputHint: () => cy.getByTestId('ndv-output-run-node-hint'),
 		savePinnedDataButton: () =>
 			this.getters.runDataPaneHeader().find('button').filter(':visible').contains('Save'),
+		inputLabel: () => cy.getByTestId('input-label'),
 		outputTableRows: () => this.getters.outputDataContainer().find('table tr'),
 		outputTableHeaders: () => this.getters.outputDataContainer().find('table thead th'),
 		outputTableHeaderByText: (text: string) => this.getters.outputTableHeaders().contains(text),
@@ -63,7 +65,9 @@ export class NDV extends BasePage {
 		httpRequestNotice: () => cy.getByTestId('node-parameters-http-notice'),
 		nthParam: (n: number) => cy.getByTestId('node-parameters').find('.parameter-item').eq(n),
 		inputRunSelector: () => this.getters.inputPanel().findChildByTestId('run-selector'),
+		inputLinkRun: () => this.getters.inputPanel().findChildByTestId('link-run'),
 		outputRunSelector: () => this.getters.outputPanel().findChildByTestId('run-selector'),
+		outputLinkRun: () => this.getters.outputPanel().findChildByTestId('link-run'),
 		outputHoveringItem: () => this.getters.outputPanel().findChildByTestId('hovering-item'),
 		inputHoveringItem: () => this.getters.inputPanel().findChildByTestId('hovering-item'),
 		outputBranches: () => this.getters.outputPanel().findChildByTestId('branches'),
@@ -74,8 +78,11 @@ export class NDV extends BasePage {
 		resourceLocatorDropdown: (paramName: string) =>
 			this.getters.resourceLocator(paramName).find('[data-test-id="resource-locator-dropdown"]'),
 		resourceLocatorErrorMessage: () => cy.getByTestId('rlc-error-container'),
+		resourceLocatorAddCredentials: () => this.getters.resourceLocatorErrorMessage().find('a'),
 		resourceLocatorModeSelector: (paramName: string) =>
 			this.getters.resourceLocator(paramName).find('[data-test-id="rlc-mode-selector"]'),
+		resourceLocatorSearch: (paramName: string) =>
+			this.getters.resourceLocator(paramName).findChildByTestId('rlc-search'),
 		resourceMapperFieldsContainer: () => cy.getByTestId('mapping-fields-container'),
 		resourceMapperSelectColumn: () => cy.getByTestId('matching-column-select'),
 		resourceMapperRemoveFieldButton: (fieldName: string) =>
@@ -84,6 +91,7 @@ export class NDV extends BasePage {
 			cy.getByTestId('columns-parameter-input-options-container'),
 		resourceMapperRemoveAllFieldsOption: () => cy.getByTestId('action-removeAllFields'),
 		sqlEditorContainer: () => cy.getByTestId('sql-editor-container'),
+		htmlEditorContainer: () => cy.getByTestId('html-editor-container'),
 		filterComponent: (paramName: string) => cy.getByTestId(`filter-${paramName}`),
 		filterCombinator: (paramName: string, index = 0) =>
 			this.getters.filterComponent(paramName).getByTestId('filter-combinator-select').eq(index),
@@ -126,6 +134,12 @@ export class NDV extends BasePage {
 		nodeRunErrorIndicator: () => cy.getByTestId('node-run-info-danger'),
 		nodeRunErrorMessage: () => cy.getByTestId('node-error-message'),
 		nodeRunErrorDescription: () => cy.getByTestId('node-error-description'),
+		fixedCollectionParameter: (paramName: string) =>
+			cy.getByTestId(`fixed-collection-${paramName}`),
+		schemaViewNode: () => cy.getByTestId('run-data-schema-node'),
+		schemaViewNodeName: () => cy.getByTestId('run-data-schema-node-name'),
+		expressionExpanders: () => cy.getByTestId('expander'),
+		expressionModalOutput: () => cy.getByTestId('expression-modal-output'),
 	};
 
 	actions = {
@@ -142,24 +156,20 @@ export class NDV extends BasePage {
 			this.getters.nodeExecuteButton().first().click();
 		},
 		close: () => {
-			this.getters.backToCanvas().click();
+			this.getters.backToCanvas().click({ force: true });
 		},
 		openInlineExpressionEditor: () => {
 			cy.contains('Expression').invoke('show').click();
 			this.getters.inlineExpressionEditorInput().click();
 		},
-		setPinnedData: (data: object) => {
+		setPinnedData: (data: object | string) => {
+			const pinnedData = typeof data === 'string' ? data : JSON.stringify(data);
 			this.getters.editPinnedDataButton().click();
 
 			this.getters.pinnedDataEditor().click();
 			this.getters
 				.pinnedDataEditor()
-				.type(
-					`{selectall}{backspace}${JSON.stringify(data).replace(new RegExp('{', 'g'), '{{}')}`,
-					{
-						delay: 0,
-					},
-				);
+				.type(`{selectall}{backspace}${pinnedData.replace(new RegExp('{', 'g'), '{{}')}`);
 
 			this.actions.savePinnedData();
 		},
@@ -167,24 +177,21 @@ export class NDV extends BasePage {
 			this.getters.editPinnedDataButton().click();
 
 			this.getters.pinnedDataEditor().click();
-			this.getters
-				.pinnedDataEditor()
-				.type('{selectall}{backspace}', { delay: 0 })
-				.paste(JSON.stringify(data));
+			this.getters.pinnedDataEditor().invoke('text', '').paste(JSON.stringify(data));
 
 			this.actions.savePinnedData();
 		},
 		clearParameterInput: (parameterName: string) => {
-			this.getters.parameterInput(parameterName).type(`{selectall}{backspace}`);
+			this.getters.parameterInput(parameterName).type('{selectall}{backspace}');
 		},
 		typeIntoParameterInput: (
 			parameterName: string,
 			content: string,
-			opts?: { parseSpecialCharSequences: boolean; delay?: number },
+			opts?: { parseSpecialCharSequences: boolean },
 		) => {
 			this.getters.parameterInput(parameterName).type(content, opts);
 		},
-		selectOptionInParameterDropdown: (parameterName: string, content: string) => {
+		selectOptionInParameterDropdown: (_: string, content: string) => {
 			getVisibleSelect().find('.option-headline').contains(content).click();
 		},
 		rename: (newName: string) => {
@@ -200,9 +207,9 @@ export class NDV extends BasePage {
 			const droppable = `[data-test-id="parameter-input-${parameterName}"]`;
 			cy.draganddrop(draggable, droppable);
 		},
-		mapToParameter: (parameterName: string) => {
+		mapToParameter: (parameterName: string, position?: 'top' | 'center' | 'bottom') => {
 			const droppable = `[data-test-id="parameter-input-${parameterName}"]`;
-			cy.draganddrop('', droppable);
+			cy.draganddrop('', droppable, { position });
 		},
 		switchInputMode: (type: 'Schema' | 'Table' | 'JSON' | 'Binary') => {
 			this.getters.inputDisplayMode().find('label').contains(type).click({ force: true });
@@ -213,6 +220,9 @@ export class NDV extends BasePage {
 		selectInputNode: (nodeName: string) => {
 			this.getters.inputSelect().find('.el-select').click();
 			this.getters.inputOption().contains(nodeName).click();
+		},
+		expandSchemaViewNode: (nodeName: string) => {
+			this.getters.schemaViewNodeName().contains(nodeName).click();
 		},
 		addDefaultPinnedData: () => {
 			this.actions.editPinnedData();
@@ -227,10 +237,10 @@ export class NDV extends BasePage {
 			getVisibleSelect().find('.el-select-dropdown__item').contains(runName).click();
 		},
 		toggleOutputRunLinking: () => {
-			this.getters.outputRunSelector().find('button').click();
+			this.getters.outputLinkRun().click();
 		},
 		toggleInputRunLinking: () => {
-			this.getters.inputRunSelector().find('button').click();
+			this.getters.inputLinkRun().click();
 		},
 		switchOutputBranch: (name: string) => {
 			this.getters.outputBranches().get('span').contains(name).click();
@@ -271,18 +281,15 @@ export class NDV extends BasePage {
 		setInvalidExpression: ({
 			fieldName,
 			invalidExpression,
-			delay,
 		}: {
 			fieldName: string;
 			invalidExpression?: string;
-			delay?: number;
 		}) => {
 			this.actions.typeIntoParameterInput(fieldName, '=');
 			this.actions.typeIntoParameterInput(fieldName, invalidExpression ?? "{{ $('unknown')", {
 				parseSpecialCharSequences: false,
-				delay,
 			});
-			this.actions.validateExpressionPreview(fieldName, `node doesn't exist`);
+			this.actions.validateExpressionPreview(fieldName, "node doesn't exist");
 		},
 		openSettings: () => {
 			this.getters.nodeSettingsTab().click();
@@ -306,6 +313,9 @@ export class NDV extends BasePage {
 		},
 		expressionSelectPrevItem: () => {
 			this.getters.inlineExpressionEditorItemPrevButton().click();
+		},
+		addItemToFixedCollection: (paramName: string) => {
+			this.getters.fixedCollectionParameter(paramName).getByTestId('fixed-collection-add').click();
 		},
 	};
 }

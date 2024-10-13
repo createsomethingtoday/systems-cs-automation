@@ -1,4 +1,3 @@
-import { resolveParameter } from '@/composables/useWorkflowHelpers';
 import { VALID_EMAIL_REGEX } from '@/constants';
 import { i18n } from '@/plugins/i18n';
 import { useEnvironmentsStore } from '@/stores/environments.ee.store';
@@ -35,10 +34,12 @@ import { luxonInstanceDocs } from './nativesAutocompleteDocs/luxon.instance.docs
 import { luxonStaticDocs } from './nativesAutocompleteDocs/luxon.static.docs';
 import type { AutocompleteInput, ExtensionTypeName, FnToDoc, Resolved } from './types';
 import {
-	applyBracketAccess,
 	applyBracketAccessCompletion,
 	applyCompletion,
+	attempt,
+	expressionWithFirstItem,
 	getDefaultArgs,
+	getDisplayType,
 	hasNoParams,
 	hasRequiredArgs,
 	insertDefaultArgs,
@@ -48,10 +49,13 @@ import {
 	isSplitInBatchesAbsent,
 	longestCommonPrefix,
 	prefixMatch,
+	resolveAutocompleteExpression,
 	sortCompletionsAlpha,
 	splitBaseTail,
 	stripExcessParens,
 } from './utils';
+import { javascriptLanguage } from '@codemirror/lang-javascript';
+import { isPairedItemIntermediateNodesError } from '@/utils/expressions';
 
 /**
  * Resolution-based completions offered according to datatype.
@@ -63,7 +67,8 @@ export function datatypeCompletions(context: CompletionContext): CompletionResul
 
 	if (word.from === word.to && !context.explicit) return null;
 
-	const [base, tail] = splitBaseTail(word.text);
+	const syntaxTree = javascriptLanguage.parser.parse(word.text);
+	const [base, tail] = splitBaseTail(syntaxTree, word.text);
 
 	let options: Completion[] = [];
 
@@ -80,25 +85,30 @@ export function datatypeCompletions(context: CompletionContext): CompletionResul
 	} else if (base === '$secrets' && isCredential) {
 		options = secretProvidersOptions();
 	} else {
-		let resolved: Resolved;
+		const resolved = attempt(
+			(): Resolved => resolveAutocompleteExpression(`={{ ${base} }}`),
+			(error) => {
+				if (!isPairedItemIntermediateNodesError(error)) {
+					return null;
+				}
 
-		try {
-			resolved = resolveParameter(`={{ ${base} }}`);
-		} catch (error) {
-			return null;
-		}
+				// Fallback on first item to provide autocomplete when intermediate nodes have not run
+				return attempt(() =>
+					resolveAutocompleteExpression(`={{ ${expressionWithFirstItem(syntaxTree, base)} }}`),
+				);
+			},
+		);
 
 		if (resolved === null) return null;
 
-		try {
-			options = datatypeOptions({ resolved, base, tail }).map(stripExcessParens(context));
-		} catch (error) {
-			return null;
-		}
+		options = attempt(
+			() => datatypeOptions({ resolved, base, tail }).map(stripExcessParens(context)),
+			() => [],
+		);
 	}
 
 	if (tail !== '') {
-		options = options.filter((o) => prefixMatch(o.label, tail) && o.label !== tail);
+		options = options.filter((o) => prefixMatch(o.label, tail));
 	}
 
 	let from = word.to - tail.length;
@@ -125,17 +135,18 @@ export function datatypeCompletions(context: CompletionContext): CompletionResul
 }
 
 function explicitDataTypeOptions(expression: string): Completion[] {
-	try {
-		const resolved = resolveParameter(`={{ ${expression} }}`);
-		return datatypeOptions({
-			resolved,
-			base: expression,
-			tail: '',
-			transformLabel: (label) => '.' + label,
-		});
-	} catch {
-		return [];
-	}
+	return attempt(
+		() => {
+			const resolved = resolveAutocompleteExpression(`={{ ${expression} }}`);
+			return datatypeOptions({
+				resolved,
+				base: expression,
+				tail: '',
+				transformLabel: (label) => '.' + label,
+			});
+		},
+		() => [],
+	);
 }
 
 function datatypeOptions(input: AutocompleteInput): Completion[] {
@@ -155,7 +166,13 @@ function datatypeOptions(input: AutocompleteInput): Completion[] {
 		return booleanOptions();
 	}
 
-	if (DateTime.isDateTime(resolved)) {
+	if (
+		attempt(
+			// This can throw when resolved is a proxy
+			() => DateTime.isDateTime(resolved),
+			() => false,
+		)
+	) {
 		return luxonOptions(input as AutocompleteInput<DateTime>);
 	}
 
@@ -181,7 +198,7 @@ export const natives = ({
 	typeName: ExtensionTypeName;
 	transformLabel?: (label: string) => string;
 }): Completion[] => {
-	const nativeDocs: NativeDoc = NativeMethods.find((ee) => ee.typeName.toLowerCase() === typeName);
+	const nativeDocs = NativeMethods.find((ee) => ee.typeName.toLowerCase() === typeName);
 
 	if (!nativeDocs) return [];
 
@@ -231,12 +248,6 @@ export const extensions = ({
 	return toOptions({ fnToDoc, isFunction: true, includeHidden, transformLabel });
 };
 
-export const getType = (value: unknown): string => {
-	if (Array.isArray(value)) return 'array';
-	if (value === null) return 'null';
-	return (typeof value).toLocaleLowerCase();
-};
-
 export const isInputData = (base: string): boolean => {
 	return (
 		/^\$input\..*\.json]/.test(base) || /^\$json/.test(base) || /^\$\(.*\)\..*\.json/.test(base)
@@ -258,7 +269,7 @@ export const isBinary = (input: AutocompleteInput<IDataObject>): boolean => {
 };
 
 export const getDetail = (base: string, value: unknown): string | undefined => {
-	const type = getType(value);
+	const type = getDisplayType(value);
 	if (!isInputData(base) || type === 'function') return undefined;
 	return type;
 };
@@ -382,17 +393,6 @@ const objectOptions = (input: AutocompleteInput<IDataObject>): Completion[] => {
 				detail: getDetail(base, resolvedProp),
 			};
 
-			const infoName = needsBracketAccess ? applyBracketAccess(key) : key;
-			option.info = createCompletionOption({
-				name: infoName,
-				doc: {
-					name: infoName,
-					returnType: isFunction ? 'any' : getType(resolvedProp),
-				},
-				isFunction,
-				transformLabel,
-			}).info;
-
 			return option;
 		});
 
@@ -470,12 +470,13 @@ const applySections = ({
 };
 
 const isUrl = (url: string): boolean => {
-	try {
-		new URL(url);
-		return true;
-	} catch (error) {
-		return false;
-	}
+	return attempt(
+		() => {
+			new URL(url);
+			return true;
+		},
+		() => false,
+	);
 };
 
 const stringOptions = (input: AutocompleteInput<string>): Completion[] => {
@@ -821,7 +822,7 @@ export const customDataOptions = () => {
 		},
 		{
 			name: 'getAll',
-			returnType: 'object',
+			returnType: 'Object',
 			docURL: 'https://docs.n8n.io/workflows/executions/custom-executions-data/',
 			description: i18n.baseText('codeNodeEditor.completer.$execution.customData.getAll'),
 			examples: [
@@ -1046,13 +1047,13 @@ export const itemOptions = () => {
 	return [
 		{
 			name: 'json',
-			returnType: 'object',
+			returnType: 'Object',
 			docURL: 'https://docs.n8n.io/data/data-structure/',
 			description: i18n.baseText('codeNodeEditor.completer.item.json'),
 		},
 		{
 			name: 'binary',
-			returnType: 'object',
+			returnType: 'Object',
 			docURL: 'https://docs.n8n.io/data/data-structure/',
 			description: i18n.baseText('codeNodeEditor.completer.item.binary'),
 		},
@@ -1161,7 +1162,7 @@ export const secretProvidersOptions = () => {
 			name: provider,
 			doc: {
 				name: provider,
-				returnType: 'object',
+				returnType: 'Object',
 				description: i18n.baseText('codeNodeEditor.completer.$secrets.provider'),
 				docURL: i18n.baseText('settings.externalSecrets.docs'),
 			},
@@ -1296,7 +1297,7 @@ export const objectGlobalOptions = () => {
 					evaluated: "{ id: 1, name: 'Banana' }",
 				},
 			],
-			returnType: 'object',
+			returnType: 'Object',
 			docURL:
 				'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign',
 		},

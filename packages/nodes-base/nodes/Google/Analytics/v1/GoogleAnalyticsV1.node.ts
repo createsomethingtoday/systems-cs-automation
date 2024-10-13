@@ -1,14 +1,14 @@
-import {
-	type IExecuteFunctions,
-	type IDataObject,
-	type ILoadOptionsFunctions,
-	type INodeExecutionData,
-	type INodePropertyOptions,
-	type INodeType,
-	type INodeTypeBaseDescription,
-	type INodeTypeDescription,
-	type IHttpRequestMethods,
-	NodeConnectionType,
+/* eslint-disable n8n-nodes-base/node-filename-against-convention */
+import type {
+	IExecuteFunctions,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodePropertyOptions,
+	INodeType,
+	INodeTypeBaseDescription,
+	INodeTypeDescription,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
 
 import moment from 'moment-timezone';
@@ -30,8 +30,8 @@ const versionDescription: INodeTypeDescription = {
 	defaults: {
 		name: 'Google Analytics',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
+	inputs: ['main'],
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'googleAnalyticsOAuth2',
@@ -96,15 +96,15 @@ export class GoogleAnalyticsV1 implements INodeType {
 					'https://www.googleapis.com/analytics/v3/metadata/ga/columns',
 				);
 
-				for (const dimension of dimensions) {
+				for (const dimesion of dimensions) {
 					if (
-						dimension.attributes.type === 'DIMENSION' &&
-						dimension.attributes.status !== 'DEPRECATED'
+						dimesion.attributes.type === 'DIMENSION' &&
+						dimesion.attributes.status !== 'DEPRECATED'
 					) {
 						returnData.push({
-							name: dimension.attributes.uiName,
-							value: dimension.id,
-							description: dimension.attributes.description,
+							name: dimesion.attributes.uiName,
+							value: dimesion.id,
+							description: dimesion.attributes.description,
 						});
 					}
 				}

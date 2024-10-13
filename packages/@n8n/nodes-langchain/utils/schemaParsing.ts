@@ -57,6 +57,7 @@ export function getSandboxWithZod(ctx: IExecuteFunctions, schema: JSONSchema7, i
 			const itemSchema = new Function('z', 'return (' + zodSchema + ')')(z)
 			return itemSchema
 		`,
+		itemIndex,
 		ctx.helpers,
 		{ resolver: vmResolver },
 	);

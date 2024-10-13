@@ -1,20 +1,13 @@
-// eslint-disable-next-line n8n-local-rules/misplaced-n8n-typeorm-import
 import { In, type EntityManager } from '@n8n/typeorm';
-import type { ICredentialDataDecryptedObject } from 'n8n-workflow';
-import { Service } from 'typedi';
-
-import type { CredentialsEntity } from '@/databases/entities/credentials-entity';
-import { Project } from '@/databases/entities/project';
-import { SharedCredentials } from '@/databases/entities/shared-credentials';
-import type { User } from '@/databases/entities/user';
-import { SharedCredentialsRepository } from '@/databases/repositories/shared-credentials.repository';
-import { NotFoundError } from '@/errors/response-errors/not-found.error';
-import { TransferCredentialError } from '@/errors/response-errors/transfer-credential.error';
-import { OwnershipService } from '@/services/ownership.service';
-import { ProjectService } from '@/services/project.service';
-import { RoleService } from '@/services/role.service';
-
+import type { User } from '@db/entities/User';
 import { CredentialsService } from './credentials.service';
+import { SharedCredentialsRepository } from '@db/repositories/sharedCredentials.repository';
+import type { CredentialsEntity } from '@/databases/entities/CredentialsEntity';
+import { Service } from 'typedi';
+import type { ICredentialDataDecryptedObject } from 'n8n-workflow';
+import { NotFoundError } from '@/errors/response-errors/not-found.error';
+import { OwnershipService } from '@/services/ownership.service';
+import { Project } from '@/databases/entities/Project';
 
 @Service()
 export class EnterpriseCredentialsService {
@@ -22,12 +15,9 @@ export class EnterpriseCredentialsService {
 		private readonly sharedCredentialsRepository: SharedCredentialsRepository,
 		private readonly ownershipService: OwnershipService,
 		private readonly credentialsService: CredentialsService,
-		private readonly projectService: ProjectService,
-		private readonly roleService: RoleService,
 	) {}
 
 	async shareWithProjects(
-		user: User,
 		credential: CredentialsEntity,
 		shareWithIds: string[],
 		entityManager?: EntityManager,
@@ -35,35 +25,19 @@ export class EnterpriseCredentialsService {
 		const em = entityManager ?? this.sharedCredentialsRepository.manager;
 
 		const projects = await em.find(Project, {
-			where: [
-				{
-					id: In(shareWithIds),
-					type: 'team',
-					// if user can see all projects, don't check project access
-					// if they can't, find projects they can list
-					...(user.hasGlobalScope('project:list')
-						? {}
-						: {
-								projectRelations: {
-									userId: user.id,
-									role: In(this.roleService.rolesWithScope('project', 'project:list')),
-								},
-							}),
-				},
-				{
-					id: In(shareWithIds),
-					type: 'personal',
-				},
-			],
+			where: { id: In(shareWithIds), type: 'personal' },
 		});
 
-		const newSharedCredentials = projects.map((project) =>
-			this.sharedCredentialsRepository.create({
-				credentialsId: credential.id,
-				role: 'credential:user',
-				projectId: project.id,
-			}),
-		);
+		const newSharedCredentials = projects
+			// We filter by role === 'project:personalOwner' above and there should
+			// always only be one owner.
+			.map((project) =>
+				this.sharedCredentialsRepository.create({
+					credentialsId: credential.id,
+					role: 'credential:user',
+					projectId: project.id,
+				}),
+			);
 
 		return await em.save(newSharedCredentials);
 	}
@@ -116,61 +90,5 @@ export class EnterpriseCredentialsService {
 		}
 
 		return { ...rest };
-	}
-
-	async transferOne(user: User, credentialId: string, destinationProjectId: string) {
-		// 1. get credential
-		const credential = await this.sharedCredentialsRepository.findCredentialForUser(
-			credentialId,
-			user,
-			['credential:move'],
-		);
-		NotFoundError.isDefinedAndNotNull(
-			credential,
-			`Could not find the credential with the id "${credentialId}". Make sure you have the permission to move it.`,
-		);
-
-		// 2. get owner-sharing
-		const ownerSharing = credential.shared.find((s) => s.role === 'credential:owner');
-		NotFoundError.isDefinedAndNotNull(
-			ownerSharing,
-			`Could not find owner for credential "${credential.id}"`,
-		);
-
-		// 3. get source project
-		const sourceProject = ownerSharing.project;
-
-		// 4. get destination project
-		const destinationProject = await this.projectService.getProjectWithScope(
-			user,
-			destinationProjectId,
-			['credential:create'],
-		);
-		NotFoundError.isDefinedAndNotNull(
-			destinationProject,
-			`Could not find project with the id "${destinationProjectId}". Make sure you have the permission to create credentials in it.`,
-		);
-
-		// 5. checks
-		if (sourceProject.id === destinationProject.id) {
-			throw new TransferCredentialError(
-				"You can't transfer a credential into the project that's already owning it.",
-			);
-		}
-
-		await this.sharedCredentialsRepository.manager.transaction(async (trx) => {
-			// 6. transfer the credential
-			// remove all sharings
-			await trx.remove(credential.shared);
-
-			// create new owner-sharing
-			await trx.save(
-				trx.create(SharedCredentials, {
-					credentialsId: credential.id,
-					projectId: destinationProject.id,
-					role: 'credential:owner',
-				}),
-			);
-		});
 	}
 }

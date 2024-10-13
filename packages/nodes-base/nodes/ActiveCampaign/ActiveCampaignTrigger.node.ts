@@ -8,7 +8,6 @@ import type {
 	INodeTypeDescription,
 	IWebhookResponseData,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { activeCampaignApiRequest, activeCampaignApiRequestAllItems } from './GenericFunctions';
 
@@ -16,7 +15,8 @@ export class ActiveCampaignTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'ActiveCampaign Trigger',
 		name: 'activeCampaignTrigger',
-		icon: { light: 'file:activeCampaign.svg', dark: 'file:activeCampaign.dark.svg' },
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:activeCampaign.png',
 		group: ['trigger'],
 		version: 1,
 		description: 'Handle ActiveCampaign events via webhooks',
@@ -24,7 +24,7 @@ export class ActiveCampaignTrigger implements INodeType {
 			name: 'ActiveCampaign Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'activeCampaignApi',
@@ -45,7 +45,7 @@ export class ActiveCampaignTrigger implements INodeType {
 				name: 'events',
 				type: 'multiOptions',
 				description:
-					'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+					'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				typeOptions: {
 					loadOptionsMethod: 'getEvents',
 				},

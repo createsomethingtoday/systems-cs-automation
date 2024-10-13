@@ -35,7 +35,7 @@ describe('BannerStack', () => {
 	});
 
 	it('should render redacted version', async () => {
-		const { getByTestId } = renderComponent(
+		const { container, getByTestId } = renderComponent(
 			merge(DEFAULT_SETUP, {
 				props: {
 					redactValue: true,

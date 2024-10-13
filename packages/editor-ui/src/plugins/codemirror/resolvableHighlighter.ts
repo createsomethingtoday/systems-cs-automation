@@ -3,7 +3,6 @@ import { EditorView, Decoration } from '@codemirror/view';
 import { StateField, StateEffect } from '@codemirror/state';
 import { tags } from '@lezer/highlight';
 import { syntaxHighlighting, HighlightStyle } from '@codemirror/language';
-import { captureException } from '@sentry/vue';
 
 import type {
 	ColoringStateEffect,
@@ -88,7 +87,7 @@ const coloringStateField = StateField.define<DecorationSet>({
 				}
 			}
 		} catch (error) {
-			captureException(error);
+			window?.Sentry?.captureException(error);
 		}
 
 		return colorings;

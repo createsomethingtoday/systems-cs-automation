@@ -5,7 +5,6 @@ export type SetNodeOptions = {
 	ignoreConversionErrors?: boolean;
 	include?: IncludeMods;
 	includeBinary?: boolean;
-	stripBinary?: boolean;
 };
 
 export type SetField = {

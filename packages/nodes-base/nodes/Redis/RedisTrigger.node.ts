@@ -1,17 +1,14 @@
+/* eslint-disable @typescript-eslint/no-loop-func */
 import type {
 	ITriggerFunctions,
+	IDataObject,
 	INodeType,
 	INodeTypeDescription,
 	ITriggerResponse,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import { redisConnectionTest, setupRedisClient } from './utils';
-
-interface Options {
-	jsonParseBody: boolean;
-	onlyMessage: boolean;
-}
 
 export class RedisTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -25,7 +22,7 @@ export class RedisTrigger implements INodeType {
 			name: 'Redis Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'redis',
@@ -47,7 +44,7 @@ export class RedisTrigger implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				options: [
 					{
@@ -77,41 +74,45 @@ export class RedisTrigger implements INodeType {
 		const credentials = await this.getCredentials('redis');
 
 		const channels = (this.getNodeParameter('channels') as string).split(',');
-		const options = this.getNodeParameter('options') as Options;
+		const options = this.getNodeParameter('options') as IDataObject;
 
 		if (!channels) {
 			throw new NodeOperationError(this.getNode(), 'Channels are mandatory!');
 		}
 
 		const client = setupRedisClient(credentials);
-		await client.connect();
-		await client.ping();
 
-		const onMessage = (message: string, channel: string) => {
-			if (options.jsonParseBody) {
-				try {
-					message = JSON.parse(message);
-				} catch (error) {}
+		const manualTriggerFunction = async () => {
+			await client.connect();
+			await client.ping();
+
+			try {
+				for (const channel of channels) {
+					await client.pSubscribe(channel, (message) => {
+						if (options.jsonParseBody) {
+							try {
+								message = JSON.parse(message);
+							} catch (error) {}
+						}
+
+						if (options.onlyMessage) {
+							this.emit([this.helpers.returnJsonArray({ message })]);
+							return;
+						}
+
+						this.emit([this.helpers.returnJsonArray({ channel, message })]);
+					});
+				}
+			} catch (error) {
+				throw new NodeOperationError(this.getNode(), error);
 			}
-
-			const data = options.onlyMessage ? { message } : { channel, message };
-			this.emit([this.helpers.returnJsonArray(data)]);
 		};
 
-		const manualTriggerFunction = async () =>
-			await new Promise<void>(async (resolve) => {
-				await client.pSubscribe(channels, (message, channel) => {
-					onMessage(message, channel);
-					resolve();
-				});
-			});
-
 		if (this.getMode() === 'trigger') {
-			await client.pSubscribe(channels, onMessage);
+			void manualTriggerFunction();
 		}
 
 		async function closeFunction() {
-			await client.pUnsubscribe();
 			await client.quit();
 		}
 

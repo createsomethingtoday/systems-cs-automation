@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import moment from 'moment-timezone';
 import { ouraApiRequest } from './GenericFunctions';
@@ -18,7 +17,7 @@ export class Oura implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Oura',
 		name: 'oura',
-		icon: { light: 'file:oura.svg', dark: 'file:oura.dark.svg' },
+		icon: 'file:oura.svg',
 		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -26,8 +25,8 @@ export class Oura implements INodeType {
 		defaults: {
 			name: 'Oura',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'ouraApi',

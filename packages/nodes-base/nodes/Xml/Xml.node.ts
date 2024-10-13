@@ -5,14 +5,13 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError, deepCopy } from 'n8n-workflow';
+import { NodeOperationError, deepCopy } from 'n8n-workflow';
 
 export class Xml implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'XML',
 		name: 'xml',
 		icon: 'fa:file-code',
-		iconColor: 'purple',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["mode"]==="jsonToxml" ? "JSON to XML" : "XML to JSON"}}',
@@ -21,8 +20,8 @@ export class Xml implements INodeType {
 			name: 'XML',
 			color: '#333377',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Mode',
@@ -76,7 +75,7 @@ export class Xml implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				displayOptions: {
 					show: {
 						mode: ['jsonToxml'],
@@ -150,7 +149,7 @@ export class Xml implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				displayOptions: {
 					show: {
 						mode: ['xmlToJson'],

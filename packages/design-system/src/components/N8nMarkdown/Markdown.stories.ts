@@ -1,5 +1,4 @@
 import type { StoryFn } from '@storybook/vue3';
-
 import N8nMarkdown from './Markdown.vue';
 
 export default {
@@ -51,19 +50,4 @@ Markdown.args = {
 			url: 'https://community.n8n.io/uploads/default/optimized/2X/b/b737a95de4dfe0825d50ca098171e9f33a459e74_2_690x288.png',
 		},
 	],
-};
-
-const TemplateWithCheckboxes: StoryFn = (args, { argTypes }) => ({
-	setup: () => ({ args }),
-	props: Object.keys(argTypes),
-	components: {
-		N8nMarkdown,
-	},
-	template: '<n8n-markdown v-bind="args"></n8n-markdown>',
-});
-
-export const WithCheckboxes = TemplateWithCheckboxes.bind({});
-WithCheckboxes.args = {
-	content: '__TODO__\n- [ ] Buy milk\n- [X] Buy socks\n',
-	loading: false,
 };

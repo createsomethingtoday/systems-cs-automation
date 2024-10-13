@@ -13,12 +13,12 @@ export async function getDimensions(this: ILoadOptionsFunctions): Promise<INodeP
 		'https://www.googleapis.com/analytics/v3/metadata/ga/columns',
 	);
 
-	for (const dimension of dimensions) {
-		if (dimension.attributes.type === 'DIMENSION' && dimension.attributes.status !== 'DEPRECATED') {
+	for (const dimesion of dimensions) {
+		if (dimesion.attributes.type === 'DIMENSION' && dimesion.attributes.status !== 'DEPRECATED') {
 			returnData.push({
-				name: dimension.attributes.uiName,
-				value: dimension.id,
-				description: dimension.attributes.description,
+				name: dimesion.attributes.uiName,
+				value: dimesion.id,
+				description: dimesion.attributes.description,
 			});
 		}
 	}
@@ -118,11 +118,11 @@ export async function getDimensionsGA4(
 		{ fields: 'dimensions' },
 	);
 
-	for (const dimension of dimensions) {
+	for (const dimesion of dimensions) {
 		returnData.push({
-			name: dimension.uiName as string,
-			value: dimension.apiName as string,
-			description: dimension.description as string,
+			name: dimesion.uiName as string,
+			value: dimesion.apiName as string,
+			description: dimesion.description as string,
 		});
 	}
 	return sortLoadOptions(returnData);

@@ -6,7 +6,7 @@ import type {
 	INodeTypeDescription,
 	JsonObject,
 } from 'n8n-workflow';
-import { NodeApiError, NodeConnectionType } from 'n8n-workflow';
+import { NodeApiError } from 'n8n-workflow';
 
 import { handleListing, redditApiRequest } from './GenericFunctions';
 
@@ -32,8 +32,8 @@ export class Reddit implements INodeType {
 		defaults: {
 			name: 'Reddit',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'redditOAuth2Api',

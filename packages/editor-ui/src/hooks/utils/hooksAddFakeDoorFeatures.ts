@@ -1,11 +1,10 @@
 import { useUIStore } from '@/stores/ui.store';
 import type { IFakeDoor } from '@/Interface';
 import { FAKE_DOOR_FEATURES } from '@/constants';
-import type { BaseTextKey } from '@/plugins/i18n';
 
 export function compileFakeDoorFeatures(): IFakeDoor[] {
-	const uiStore = useUIStore();
-	const fakeDoorFeatures: IFakeDoor[] = uiStore.fakeDoorFeatures.map((feature) => ({ ...feature }));
+	const store = useUIStore();
+	const fakeDoorFeatures: IFakeDoor[] = store.fakeDoorFeatures.map((feature) => ({ ...feature }));
 
 	const environmentsFeature = fakeDoorFeatures.find(
 		(feature) => feature.id === FAKE_DOOR_FEATURES.ENVIRONMENTS,
@@ -21,14 +20,14 @@ export function compileFakeDoorFeatures(): IFakeDoor[] {
 	if (loggingFeature) {
 		loggingFeature.actionBoxTitle += '.cloud';
 		loggingFeature.linkURL += '&edition=cloud';
-		loggingFeature.infoText = '' as BaseTextKey;
+		loggingFeature.infoText = '';
 	}
 
 	return fakeDoorFeatures;
 }
 
 export const hooksAddFakeDoorFeatures = () => {
-	const uiStore = useUIStore();
+	const store = useUIStore();
 
-	uiStore.fakeDoorFeatures = compileFakeDoorFeatures();
+	store.fakeDoorFeatures = compileFakeDoorFeatures();
 };

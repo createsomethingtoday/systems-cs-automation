@@ -1,16 +1,7 @@
 import { ref } from 'vue';
 
 export function useDeviceSupport() {
-	/**
-	 * Check if the device is a touch device but exclude devices that have a fine pointer (mouse or track-pad)
-	 * - `fine` will check for an accurate pointing device. Examples include mice, touch-pads, and drawing styluses
-	 * - `coarse` will check for a pointing device of limited accuracy. Examples include touchscreens and motion-detection sensors
-	 * - `any-pointer` will check for the presence of any pointing device, if there are multiple of them
-	 */
-	const isTouchDevice = ref(
-		window.matchMedia('(any-pointer: coarse)').matches &&
-			!window.matchMedia('(any-pointer: fine)').matches,
-	);
+	const isTouchDevice = ref(window.hasOwnProperty('ontouchstart') || navigator.maxTouchPoints > 0);
 	const userAgent = ref(navigator.userAgent.toLowerCase());
 	const isMacOs = ref(
 		userAgent.value.includes('macintosh') ||

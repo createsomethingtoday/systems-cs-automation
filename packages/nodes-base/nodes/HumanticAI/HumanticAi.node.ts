@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { humanticAiApiRequest } from './GenericFunctions';
 
@@ -15,8 +14,8 @@ export class HumanticAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Humantic AI',
 		name: 'humanticAi',
-
-		icon: 'file:humanticai.svg',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:humanticai.png',
 		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -24,8 +23,8 @@ export class HumanticAi implements INodeType {
 		defaults: {
 			name: 'Humantic AI',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'humanticAiApi',

@@ -18,7 +18,7 @@ export const mockSimplifiedNodeType = (
 ): SimplifiedNodeType => ({
 	displayName: 'Sample DisplayName',
 	name: 'sampleName',
-	icon: 'fa:sampleIcon',
+	icon: 'sampleIcon',
 	iconUrl: 'https://example.com/icon.png',
 	group: ['group1', 'group2'],
 	description: 'Sample description',

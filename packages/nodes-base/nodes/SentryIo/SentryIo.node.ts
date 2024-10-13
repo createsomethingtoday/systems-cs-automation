@@ -1,12 +1,11 @@
-import {
-	type IExecuteFunctions,
-	type IDataObject,
-	type ILoadOptionsFunctions,
-	type INodeExecutionData,
-	type INodePropertyOptions,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodePropertyOptions,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import { eventFields, eventOperations } from './EventDescription';
@@ -29,7 +28,7 @@ export class SentryIo implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Sentry.io',
 		name: 'sentryIo',
-		icon: { light: 'file:sentryio.svg', dark: 'file:sentryio.dark.svg' },
+		icon: 'file:sentryio.svg',
 		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -37,8 +36,8 @@ export class SentryIo implements INodeType {
 		defaults: {
 			name: 'Sentry.io',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'sentryIoOAuth2Api',

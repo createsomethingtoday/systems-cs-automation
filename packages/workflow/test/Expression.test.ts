@@ -3,17 +3,15 @@
  */
 
 import { DateTime, Duration, Interval } from 'luxon';
-
+import { Workflow } from '@/Workflow';
+import * as Helpers from './Helpers';
+import type { ExpressionTestEvaluation, ExpressionTestTransform } from './ExpressionFixtures/base';
+import { baseFixtures } from './ExpressionFixtures/base';
+import type { INodeExecutionData } from '@/Interfaces';
+import { extendSyntax } from '@/Extensions/ExpressionExtension';
 import { ExpressionError } from '@/errors/expression.error';
 import { setDifferEnabled, setEvaluator } from '@/ExpressionEvaluatorProxy';
-import { extendSyntax } from '@/Extensions/ExpressionExtension';
-import type { INodeExecutionData } from '@/Interfaces';
-import { Workflow } from '@/Workflow';
-
 import { workflow } from './ExpressionExtensions/Helpers';
-import { baseFixtures } from './ExpressionFixtures/base';
-import type { ExpressionTestEvaluation, ExpressionTestTransform } from './ExpressionFixtures/base';
-import * as Helpers from './Helpers';
 
 setDifferEnabled(true);
 
@@ -76,9 +74,7 @@ for (const evaluator of ['tmpl', 'tournament'] as const) {
 				expect(evaluate('={{Reflect}}')).toEqual({});
 				expect(evaluate('={{Proxy}}')).toEqual({});
 
-				expect(() => evaluate('={{constructor}}')).toThrowError(
-					new ExpressionError('Cannot access "constructor" due to security concerns'),
-				);
+				expect(evaluate('={{constructor}}')).toEqual({});
 
 				expect(evaluate('={{escape}}')).toEqual({});
 				expect(evaluate('={{unescape}}')).toEqual({});
@@ -170,7 +166,7 @@ for (const evaluator of ['tmpl', 'tournament'] as const) {
 				const testFn = jest.fn();
 				Object.assign(global, { testFn });
 				expect(() => evaluate("={{ Date['constructor']('testFn()')()}}")).toThrowError(
-					new ExpressionError('Cannot access "constructor" due to security concerns'),
+					new ExpressionError('Arbitrary code execution detected'),
 				);
 				expect(testFn).not.toHaveBeenCalled();
 			});
@@ -190,8 +186,8 @@ for (const evaluator of ['tmpl', 'tournament'] as const) {
 				}
 				test(t.expression, () => {
 					const evaluationTests = t.tests.filter(
-						(test): test is ExpressionTestEvaluation => test.type === 'evaluation',
-					);
+						(test) => test.type === 'evaluation',
+					) as ExpressionTestEvaluation[];
 
 					for (const test of evaluationTests) {
 						const input = test.input.map((d) => ({ json: d })) as any;
@@ -213,8 +209,8 @@ for (const evaluator of ['tmpl', 'tournament'] as const) {
 				}
 				test(t.expression, () => {
 					for (const test of t.tests.filter(
-						(test): test is ExpressionTestTransform => test.type === 'transform',
-					)) {
+						(test) => test.type === 'transform',
+					) as ExpressionTestTransform[]) {
 						const expr = t.expression;
 						expect(extendSyntax(expr, test.forceTransform)).toEqual(test.result ?? expr);
 					}

@@ -14,7 +14,7 @@ export class Auth0ManagementApi implements ICredentialType {
 
 	documentationUrl = 'auth0management';
 
-	icon = { light: 'file:icons/Auth0.svg', dark: 'file:icons/Auth0.dark.svg' } as const;
+	icon = 'file:icons/Auth0.svg';
 
 	httpRequestNode = {
 		name: 'Auth0',

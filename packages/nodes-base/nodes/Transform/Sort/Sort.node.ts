@@ -8,10 +8,8 @@ import {
 	type INodeExecutionData,
 	type INodeType,
 	type INodeTypeDescription,
-	NodeConnectionType,
 } from 'n8n-workflow';
-import { sortByCode } from './utils';
-import { shuffleArray } from '@utils/utilities';
+import { shuffleArray, sortByCode } from './utils';
 
 export class Sort implements INodeType {
 	description: INodeTypeDescription = {
@@ -25,8 +23,8 @@ export class Sort implements INodeType {
 		defaults: {
 			name: 'Sort',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Type',

@@ -1,3 +1,4 @@
+/* eslint-disable n8n-nodes-base/node-filename-against-convention */
 import type {
 	IExecuteFunctions,
 	IDataObject,
@@ -7,7 +8,7 @@ import type {
 	INodeTypeBaseDescription,
 	IHttpRequestMethods,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import { oldVersionNotice } from '../../../utils/descriptions';
 import { generatePairedItemData } from '../../../utils/utilities';
@@ -24,8 +25,8 @@ const versionDescription: INodeTypeDescription = {
 	defaults: {
 		name: 'Airtable',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
+	inputs: ['main'],
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'airtableApi',
@@ -346,7 +347,7 @@ const versionDescription: INodeTypeDescription = {
 			},
 			default: {},
 			description: 'Additional options which decide which records should be returned',
-			placeholder: 'Add option',
+			placeholder: 'Add Option',
 			options: [
 				{
 					displayName: 'Fields',
@@ -501,7 +502,7 @@ const versionDescription: INodeTypeDescription = {
 			displayName: 'Options',
 			name: 'options',
 			type: 'collection',
-			placeholder: 'Add option',
+			placeholder: 'Add Option',
 			displayOptions: {
 				show: {
 					operation: ['append', 'delete', 'update'],

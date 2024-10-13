@@ -1,9 +1,10 @@
 import { computed, reactive } from 'vue';
 import { defineStore } from 'pinia';
 import type { UsageState } from '@/Interface';
-import * as usageApi from '@/api/usage';
-import { useRootStore } from '@/stores/root.store';
+import { activateLicenseKey, getLicense, renewLicense, requestLicenseTrial } from '@/api/usage';
+import { useRootStore } from '@/stores/n8nRoot.store';
 import { useSettingsStore } from '@/stores/settings.store';
+import { useUsersStore } from '@/stores/users.store';
 
 export type UsageTelemetry = {
 	instance_id: string;
@@ -34,6 +35,7 @@ const DEFAULT_STATE: UsageState = {
 export const useUsageStore = defineStore('usage', () => {
 	const rootStore = useRootStore();
 	const settingsStore = useSettingsStore();
+	const usersStore = useUsersStore();
 
 	const state = reactive<UsageState>(DEFAULT_STATE);
 
@@ -63,19 +65,19 @@ export const useUsageStore = defineStore('usage', () => {
 	};
 
 	const getLicenseInfo = async () => {
-		const data = await usageApi.getLicense(rootStore.restApiContext);
+		const data = await getLicense(rootStore.getRestApiContext);
 		setData(data);
 	};
 
 	const activateLicense = async (activationKey: string) => {
-		const data = await usageApi.activateLicenseKey(rootStore.restApiContext, { activationKey });
+		const data = await activateLicenseKey(rootStore.getRestApiContext, { activationKey });
 		setData(data);
 		await settingsStore.getSettings();
 	};
 
 	const refreshLicenseManagementToken = async () => {
 		try {
-			const data = await usageApi.renewLicense(rootStore.restApiContext);
+			const data = await renewLicense(rootStore.getRestApiContext);
 			setData(data);
 		} catch (error) {
 			await getLicenseInfo();
@@ -83,11 +85,20 @@ export const useUsageStore = defineStore('usage', () => {
 	};
 
 	const requestEnterpriseLicenseTrial = async () => {
-		await usageApi.requestLicenseTrial(rootStore.restApiContext);
-	};
+		if (!usersStore.currentUser) {
+			throw new Error('User is not logged in');
+		}
 
-	const registerCommunityEdition = async (email: string) =>
-		await usageApi.registerCommunityEdition(rootStore.restApiContext, { email });
+		const data = await requestLicenseTrial({
+			licenseType: 'enterprise',
+			firstName: usersStore.currentUser.firstName ?? '',
+			lastName: usersStore.currentUser.lastName ?? '',
+			email: usersStore.currentUser.email ?? '',
+			instanceUrl: window.location.origin,
+		});
+
+		return data;
+	};
 
 	return {
 		setLoading,
@@ -96,7 +107,6 @@ export const useUsageStore = defineStore('usage', () => {
 		activateLicense,
 		refreshLicenseManagementToken,
 		requestEnterpriseLicenseTrial,
-		registerCommunityEdition,
 		planName,
 		planId,
 		executionLimit,
@@ -126,5 +136,6 @@ export const useUsageStore = defineStore('usage', () => {
 			usage: executionCount.value,
 			quota: executionLimit.value,
 		})),
+		isDesktop: computed(() => settingsStore.isDesktopDeployment),
 	};
 });

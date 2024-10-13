@@ -7,21 +7,22 @@ import type {
 	JsonObject,
 	IRequestOptions,
 } from 'n8n-workflow';
-import { NodeApiError, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 export class OpenWeatherMap implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'OpenWeatherMap',
 		name: 'openWeatherMap',
-		icon: 'file:openWeatherMap.svg',
+		icon: 'fa:sun',
 		group: ['input'],
 		version: 1,
 		description: 'Gets current and future weather information',
 		defaults: {
 			name: 'OpenWeatherMap',
+			color: '#554455',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'openWeatherMapApi',

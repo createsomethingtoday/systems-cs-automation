@@ -3,8 +3,8 @@ import type { ITag } from '@/Interface';
 import { faker } from '@faker-js/faker';
 
 export const tagFactory = Factory.extend<ITag>({
-	id(i: number) {
-		return i.toString();
+	id(i: string) {
+		return i;
 	},
 	name() {
 		return faker.lorem.word();

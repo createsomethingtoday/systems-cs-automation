@@ -7,7 +7,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { googleApiRequest, googleApiRequestAllItems } from './GenericFunctions';
 
@@ -17,8 +16,8 @@ export class GoogleTasks implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Google Tasks',
 		name: 'googleTasks',
-
-		icon: 'file:googleTasks.svg',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:googleTasks.png',
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -26,8 +25,8 @@ export class GoogleTasks implements INodeType {
 		defaults: {
 			name: 'Google Tasks',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'googleTasksOAuth2Api',

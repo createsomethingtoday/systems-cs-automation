@@ -91,7 +91,7 @@ describe('MainSidebarSourceControl', () => {
 			});
 			const openModalSpy = vi.spyOn(uiStore, 'openModalWithData');
 
-			const { getAllByRole } = renderComponent({
+			const { getAllByRole, getByRole } = renderComponent({
 				pinia,
 				props: { isCollapsed: false },
 			});

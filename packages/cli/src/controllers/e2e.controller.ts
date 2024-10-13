@@ -1,25 +1,21 @@
-import type { PushPayload, PushType } from '@n8n/api-types';
 import { Request } from 'express';
-import Container from 'typedi';
 import { v4 as uuid } from 'uuid';
-
-import { ActiveWorkflowManager } from '@/active-workflow-manager';
 import config from '@/config';
+import { SettingsRepository } from '@db/repositories/settings.repository';
+import { UserRepository } from '@db/repositories/user.repository';
+import { ActiveWorkflowManager } from '@/ActiveWorkflowManager';
+import { MessageEventBus } from '@/eventbus/MessageEventBus/MessageEventBus';
+import { License } from '@/License';
 import { LICENSE_FEATURES, LICENSE_QUOTAS, UNLIMITED_LICENSE_QUOTA, inE2ETests } from '@/constants';
-import { AuthUserRepository } from '@/databases/repositories/auth-user.repository';
-import { SettingsRepository } from '@/databases/repositories/settings.repository';
-import { UserRepository } from '@/databases/repositories/user.repository';
 import { Patch, Post, RestController } from '@/decorators';
-import { MessageEventBus } from '@/eventbus/message-event-bus/message-event-bus';
-import type { BooleanLicenseFeature, NumericLicenseFeature } from '@/interfaces';
-import type { FeatureReturnType } from '@/license';
-import { License } from '@/license';
-import { Logger } from '@/logging/logger.service';
-import { MfaService } from '@/mfa/mfa.service';
-import { Push } from '@/push';
 import type { UserSetupPayload } from '@/requests';
+import type { BooleanLicenseFeature, IPushDataType, NumericLicenseFeature } from '@/Interfaces';
+import { MfaService } from '@/Mfa/mfa.service';
+import { Push } from '@/push';
 import { CacheService } from '@/services/cache/cache.service';
 import { PasswordUtility } from '@/services/password.utility';
+import Container from 'typedi';
+import { Logger } from '@/Logger';
 
 if (!inE2ETests) {
 	Container.get(Logger).error('E2E endpoints only allowed during E2E tests');
@@ -58,13 +54,13 @@ type ResetRequest = Request<
 	}
 >;
 
-type PushRequest<T extends PushType> = Request<
+type PushRequest = Request<
 	{},
 	{},
 	{
-		type: T;
+		type: IPushDataType;
 		pushRef: string;
-		data: PushPayload<T>;
+		data: object;
 	}
 >;
 
@@ -90,9 +86,6 @@ export class E2EController {
 		[LICENSE_FEATURES.PROJECT_ROLE_ADMIN]: false,
 		[LICENSE_FEATURES.PROJECT_ROLE_EDITOR]: false,
 		[LICENSE_FEATURES.PROJECT_ROLE_VIEWER]: false,
-		[LICENSE_FEATURES.AI_ASSISTANT]: false,
-		[LICENSE_FEATURES.COMMUNITY_NODES_CUSTOM_REGISTRY]: false,
-		[LICENSE_FEATURES.ASK_AI]: false,
 	};
 
 	private numericFeatures: Record<NumericLicenseFeature, number> = {
@@ -113,24 +106,12 @@ export class E2EController {
 		private readonly passwordUtility: PasswordUtility,
 		private readonly eventBus: MessageEventBus,
 		private readonly userRepository: UserRepository,
-		private readonly authUserRepository: AuthUserRepository,
 	) {
 		license.isFeatureEnabled = (feature: BooleanLicenseFeature) =>
 			this.enabledFeatures[feature] ?? false;
-
-		// Ugly hack to satisfy biome parser
-		const getFeatureValue = <T extends keyof FeatureReturnType>(
-			feature: T,
-		): FeatureReturnType[T] => {
-			if (feature in this.numericFeatures) {
-				return this.numericFeatures[feature as NumericLicenseFeature] as FeatureReturnType[T];
-			} else {
-				return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
-			}
-		};
-		license.getFeatureValue = getFeatureValue;
-
-		license.getPlanName = () => 'Enterprise';
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		license.getFeatureValue<NumericLicenseFeature> = (feature: NumericLicenseFeature) =>
+			this.numericFeatures[feature] ?? UNLIMITED_LICENSE_QUOTA;
 	}
 
 	@Post('/reset', { skipAuth: true })
@@ -144,7 +125,7 @@ export class E2EController {
 	}
 
 	@Post('/push', { skipAuth: true })
-	async pushSend(req: PushRequest<any>) {
+	async pushSend(req: PushRequest) {
 		this.push.broadcast(req.body.type, req.body.data);
 	}
 
@@ -204,6 +185,13 @@ export class E2EController {
 		members: UserSetupPayload[],
 		admin: UserSetupPayload,
 	) {
+		if (owner?.mfaSecret && owner.mfaRecoveryCodes?.length) {
+			const { encryptedRecoveryCodes, encryptedSecret } =
+				this.mfaService.encryptSecretAndRecoveryCodes(owner.mfaSecret, owner.mfaRecoveryCodes);
+			owner.mfaSecret = encryptedSecret;
+			owner.mfaRecoveryCodes = encryptedRecoveryCodes;
+		}
+
 		const userCreatePromises = [
 			this.userRepository.createUserWithProject({
 				id: uuid(),
@@ -233,17 +221,7 @@ export class E2EController {
 			);
 		}
 
-		const [newOwner] = await Promise.all(userCreatePromises);
-
-		if (owner?.mfaSecret && owner.mfaRecoveryCodes?.length) {
-			const { encryptedRecoveryCodes, encryptedSecret } =
-				this.mfaService.encryptSecretAndRecoveryCodes(owner.mfaSecret, owner.mfaRecoveryCodes);
-
-			await this.authUserRepository.update(newOwner.user.id, {
-				mfaSecret: encryptedSecret,
-				mfaRecoveryCodes: encryptedRecoveryCodes,
-			});
-		}
+		await Promise.all(userCreatePromises);
 
 		await this.settingsRepo.update(
 			{ key: 'userManagement.isInstanceOwnerSetUp' },

@@ -1,3 +1,44 @@
+<template>
+	<!-- Node Item is draggable only if it doesn't contain actions -->
+	<n8n-node-creator-node
+		:draggable="!showActionArrow"
+		:class="$style.nodeItem"
+		:description="description"
+		:title="displayName"
+		:show-action-arrow="showActionArrow"
+		:is-trigger="isTrigger"
+		:data-test-id="dataTestId"
+		@dragstart="onDragStart"
+		@dragend="onDragEnd"
+	>
+		<template #icon>
+			<div v-if="isSubNodeType" :class="$style.subNodeBackground"></div>
+			<NodeIcon :class="$style.nodeIcon" :node-type="nodeType" />
+		</template>
+
+		<template v-if="isCommunityNode" #tooltip>
+			<p
+				:class="$style.communityNodeIcon"
+				@click="onCommunityNodeTooltipClick"
+				v-html="
+					i18n.baseText('generic.communityNode.tooltip', {
+						interpolate: {
+							packageName: nodeType.name.split('.')[0],
+							docURL: COMMUNITY_NODES_INSTALLATION_DOCS_URL,
+						},
+					})
+				"
+			/>
+		</template>
+		<template #dragContent>
+			<div ref="draggableDataTransfer" :class="$style.draggableDataTransfer" />
+			<div v-show="dragging" :class="$style.draggable" :style="draggableStyle">
+				<NodeIcon :node-type="nodeType" :size="40" :shrink="false" @click.capture.stop />
+			</div>
+		</template>
+	</n8n-node-creator-node>
+</template>
+
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { SimplifiedNodeType } from '@/Interface';
@@ -14,7 +55,6 @@ import { useNodeCreatorStore } from '@/stores/nodeCreator.store';
 import NodeIcon from '@/components/NodeIcon.vue';
 
 import { useActions } from '../composables/useActions';
-import { useViewStacks } from '../composables/useViewStacks';
 import { useI18n } from '@/composables/useI18n';
 import { useTelemetry } from '@/composables/useTelemetry';
 import { useNodeType } from '@/composables/useNodeType';
@@ -35,7 +75,6 @@ const telemetry = useTelemetry();
 
 const { actions } = useNodeCreatorStore();
 const { getAddedNodesAndConnections } = useActions();
-const { activeViewStack } = useViewStacks();
 const { isSubNodeType } = useNodeType({
 	nodeType: props.nodeType,
 });
@@ -63,7 +102,7 @@ const dataTestId = computed(() =>
 );
 
 const hasActions = computed(() => {
-	return nodeActions.value.length > 1 && !activeViewStack.hideActions;
+	return nodeActions.value.length > 1;
 });
 
 const nodeActions = computed(() => {
@@ -141,49 +180,6 @@ function onCommunityNodeTooltipClick(event: MouseEvent) {
 	}
 }
 </script>
-
-<template>
-	<!-- Node Item is draggable only if it doesn't contain actions -->
-	<n8n-node-creator-node
-		:draggable="!showActionArrow"
-		:class="$style.nodeItem"
-		:description="description"
-		:title="displayName"
-		:show-action-arrow="showActionArrow"
-		:is-trigger="isTrigger"
-		:data-test-id="dataTestId"
-		:tag="nodeType.tag"
-		@dragstart="onDragStart"
-		@dragend="onDragEnd"
-	>
-		<template #icon>
-			<div v-if="isSubNodeType" :class="$style.subNodeBackground"></div>
-			<NodeIcon :class="$style.nodeIcon" :node-type="nodeType" />
-		</template>
-
-		<template v-if="isCommunityNode" #tooltip>
-			<p
-				:class="$style.communityNodeIcon"
-				@click="onCommunityNodeTooltipClick"
-				v-n8n-html="
-					i18n.baseText('generic.communityNode.tooltip', {
-						interpolate: {
-							packageName: nodeType.name.split('.')[0],
-							docURL: COMMUNITY_NODES_INSTALLATION_DOCS_URL,
-						},
-					})
-				"
-			/>
-		</template>
-		<template #dragContent>
-			<div ref="draggableDataTransfer" :class="$style.draggableDataTransfer" />
-			<div v-show="dragging" :class="$style.draggable" :style="draggableStyle">
-				<NodeIcon :node-type="nodeType" :size="40" :shrink="false" @click.capture.stop />
-			</div>
-		</template>
-	</n8n-node-creator-node>
-</template>
-
 <style lang="scss" module>
 .nodeItem {
 	--trigger-icon-background-color: #{$trigger-icon-background-color};

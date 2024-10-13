@@ -3,7 +3,6 @@ import type {
 	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
-	Icon,
 } from 'n8n-workflow';
 
 export class AlienVaultApi implements ICredentialType {
@@ -13,7 +12,7 @@ export class AlienVaultApi implements ICredentialType {
 
 	documentationUrl = 'alienvault';
 
-	icon: Icon = 'file:icons/AlienVault.png';
+	icon = 'file:icons/AlienVault.png';
 
 	httpRequestNode = {
 		name: 'AlienVault',

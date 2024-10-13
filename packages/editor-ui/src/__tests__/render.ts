@@ -19,8 +19,7 @@ export type RenderOptions = Parameters<typeof render>[1] & {
 const TelemetryPlugin: Plugin<{}> = {
 	install(app) {
 		app.config.globalProperties.$telemetry = {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			track(..._: unknown[]) {},
+			track(event: string, properties?: object) {},
 		} as Telemetry;
 	},
 };

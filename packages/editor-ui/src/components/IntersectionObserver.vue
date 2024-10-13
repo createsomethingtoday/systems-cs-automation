@@ -1,3 +1,9 @@
+<template>
+	<div ref="root">
+		<slot></slot>
+	</div>
+</template>
+
 <script lang="ts">
 import type { PropType } from 'vue';
 import { defineComponent } from 'vue';
@@ -22,7 +28,7 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			observer: null as IntersectionObserver | null,
+			observer: null,
 		};
 	},
 	mounted() {
@@ -58,15 +64,9 @@ export default defineComponent({
 		});
 	},
 	beforeUnmount() {
-		if (this.enabled && this.observer) {
+		if (this.enabled) {
 			this.observer.disconnect();
 		}
 	},
 });
 </script>
-
-<template>
-	<div ref="root">
-		<slot></slot>
-	</div>
-</template>

@@ -4,7 +4,6 @@ import { snakeCase } from 'lodash-es';
 import { useSessionStorage } from '@vueuse/core';
 
 import { N8nButton, N8nInput, N8nTooltip } from 'n8n-design-system/components';
-import { randomInt } from 'n8n-workflow';
 import type { CodeExecutionMode, INodeExecutionData } from 'n8n-workflow';
 
 import type { BaseTextKey } from '@/plugins/i18n';
@@ -16,21 +15,22 @@ import { useI18n } from '@/composables/useI18n';
 import { useMessage } from '@/composables/useMessage';
 import { useToast } from '@/composables/useToast';
 import { useNDVStore } from '@/stores/ndv.store';
-import { useRootStore } from '@/stores/root.store';
+import { usePostHog } from '@/stores/posthog.store';
+import { useRootStore } from '@/stores/n8nRoot.store';
 import { useWorkflowsStore } from '@/stores/workflows.store';
 import { executionDataToJson } from '@/utils/nodeTypesUtils';
 import {
+	ASK_AI_EXPERIMENT,
 	ASK_AI_MAX_PROMPT_LENGTH,
 	ASK_AI_MIN_PROMPT_LENGTH,
 	ASK_AI_LOADING_DURATION_MS,
 } from '@/constants';
-import type { AskAiRequest } from '@/types/assistant.types';
 
 const emit = defineEmits<{
-	submit: [code: string];
-	replaceCode: [code: string];
-	startedLoading: [];
-	finishedLoading: [];
+	(e: 'submit', code: string): void;
+	(e: 'replaceCode', code: string): void;
+	(e: 'startedLoading'): void;
+	(e: 'finishedLoading'): void;
 }>();
 
 const props = defineProps<{
@@ -88,7 +88,7 @@ function getParentNodes() {
 			return name !== activeNode.name && nodes.findIndex((node) => node.name === name) === i;
 		})
 		.map((n) => getNodeByName(n.name))
-		.filter((n) => n !== null);
+		.filter((n) => n !== null) as INodeUi[];
 }
 
 function getSchemas() {
@@ -131,7 +131,7 @@ function stopLoading() {
 }
 
 async function onSubmit() {
-	const { restApiContext } = useRootStore();
+	const { getRestApiContext } = useRootStore();
 	const { activeNode } = useNDVStore();
 	const { showMessage } = useToast();
 	const { alert } = useMessage();
@@ -153,21 +153,24 @@ async function onSubmit() {
 
 	startLoading();
 
-	const rootStore = useRootStore();
-
-	const payload: AskAiRequest.RequestPayload = {
-		question: prompt.value,
-		context: {
-			schema: schemas.parentNodesSchemas,
-			inputSchema: schemas.inputSchema!,
-			ndvPushRef: useNDVStore().pushRef,
-			pushRef: rootStore.pushRef,
-		},
-		forNode: 'code',
-	};
-
 	try {
-		const { code } = await generateCodeForPrompt(restApiContext, payload);
+		const version = useRootStore().versionCli;
+		const model =
+			usePostHog().getVariant(ASK_AI_EXPERIMENT.name) === ASK_AI_EXPERIMENT.gpt4
+				? 'gpt-4'
+				: 'gpt-3.5-turbo-16k';
+
+		const { code } = await generateCodeForPrompt(getRestApiContext, {
+			question: prompt.value,
+			context: {
+				schema: schemas.parentNodesSchemas,
+				inputSchema: schemas.inputSchema!,
+				ndvPushRef: useNDVStore().pushRef,
+				pushRef: useRootStore().pushRef,
+			},
+			model,
+			n8nVersion: version,
+		});
 
 		stopLoading();
 		emit('replaceCode', code);
@@ -203,7 +206,7 @@ function triggerLoadingChange() {
 
 		// Loading phrase change
 		if (!lastPhraseChange || timestamp - lastPhraseChange >= loadingPhraseUpdateMs) {
-			loadingPhraseIndex.value = randomInt(loadingPhrasesCount);
+			loadingPhraseIndex.value = Math.floor(Math.random() * loadingPhrasesCount);
 			lastPhraseChange = timestamp;
 		}
 

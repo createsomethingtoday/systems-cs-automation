@@ -9,7 +9,7 @@ import { apiRequest } from '../../transport';
 import { modelRLC } from '../descriptions';
 
 const properties: INodeProperties[] = [
-	modelRLC('modelSearch'),
+	modelRLC,
 	{
 		displayName: 'Name',
 		name: 'name',

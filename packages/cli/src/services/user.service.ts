@@ -1,17 +1,17 @@
+import { Container, Service } from 'typedi';
 import type { IUserSettings } from 'n8n-workflow';
 import { ApplicationError, ErrorReporterProxy as ErrorReporter } from 'n8n-workflow';
-import { Service } from 'typedi';
 
-import type { User, AssignableRole } from '@/databases/entities/user';
-import { UserRepository } from '@/databases/repositories/user.repository';
-import { InternalServerError } from '@/errors/response-errors/internal-server.error';
-import { EventService } from '@/events/event.service';
-import type { Invitation, PublicUser } from '@/interfaces';
-import { Logger } from '@/logging/logger.service';
+import type { User, AssignableRole } from '@db/entities/User';
+import { UserRepository } from '@db/repositories/user.repository';
+import type { PublicUser } from '@/Interfaces';
 import type { PostHogClient } from '@/posthog';
-import type { UserRequest } from '@/requests';
+import { Logger } from '@/Logger';
+import { UserManagementMailer } from '@/UserManagement/email';
+import { InternalHooks } from '@/InternalHooks';
 import { UrlService } from '@/services/url.service';
-import { UserManagementMailer } from '@/user-management/email';
+import type { UserRequest } from '@/requests';
+import { InternalServerError } from '@/errors/response-errors/internal-server.error';
 
 @Service()
 export class UserService {
@@ -20,7 +20,6 @@ export class UserService {
 		private readonly userRepository: UserRepository,
 		private readonly mailer: UserManagementMailer,
 		private readonly urlService: UrlService,
-		private readonly eventService: EventService,
 	) {}
 
 	async update(userId: string, data: Partial<User>) {
@@ -58,13 +57,15 @@ export class UserService {
 			withScopes?: boolean;
 		},
 	) {
-		const { password, updatedAt, authIdentities, ...rest } = user;
+		const { password, updatedAt, apiKey, authIdentities, mfaRecoveryCodes, mfaSecret, ...rest } =
+			user;
 
 		const ldapIdentity = authIdentities?.find((i) => i.providerType === 'ldap');
 
 		let publicUser: PublicUser = {
 			...rest,
 			signInType: ldapIdentity ? 'ldap' : 'email',
+			hasRecoveryCodesLeft: !!user.mfaRecoveryCodes?.length,
 		};
 
 		if (options?.withInviteUrl && !options?.inviterId) {
@@ -138,35 +139,36 @@ export class UserService {
 					const result = await this.mailer.invite({
 						email,
 						inviteAcceptUrl,
+						domain,
 					});
 					if (result.emailSent) {
 						invitedUser.user.emailSent = true;
 						delete invitedUser.user?.inviteAcceptUrl;
-
-						this.eventService.emit('user-transactional-email-sent', {
-							userId: id,
-							messageType: 'New user invite',
-							publicApi: false,
+						void Container.get(InternalHooks).onUserTransactionalEmail({
+							user_id: id,
+							message_type: 'New user invite',
+							public_api: false,
 						});
 					}
 
-					this.eventService.emit('user-invited', {
+					void Container.get(InternalHooks).onUserInvite({
 						user: owner,
-						targetUserId: Object.values(toInviteUsers),
-						publicApi: false,
-						emailSent: result.emailSent,
-						inviteeRole: role, // same role for all invited users
+						target_user_id: Object.values(toInviteUsers),
+						public_api: false,
+						email_sent: result.emailSent,
+						invitee_role: role, // same role for all invited users
 					});
 				} catch (e) {
 					if (e instanceof Error) {
-						this.eventService.emit('email-failed', {
+						void Container.get(InternalHooks).onEmailFailed({
 							user: owner,
-							messageType: 'New user invite',
-							publicApi: false,
+							message_type: 'New user invite',
+							public_api: false,
 						});
 						this.logger.error('Failed to send email', {
 							userId: owner.id,
 							inviteAcceptUrl,
+							domain,
 							email,
 						});
 						invitedUser.error = e.message;
@@ -178,14 +180,14 @@ export class UserService {
 		);
 	}
 
-	async inviteUsers(owner: User, invitations: Invitation[]) {
-		const emails = invitations.map(({ email }) => email);
+	async inviteUsers(owner: User, attributes: Array<{ email: string; role: AssignableRole }>) {
+		const emails = attributes.map(({ email }) => email);
 
 		const existingUsers = await this.userRepository.findManyByEmail(emails);
 
 		const existUsersEmails = existingUsers.map((user) => user.email);
 
-		const toCreateUsers = invitations.filter(({ email }) => !existUsersEmails.includes(email));
+		const toCreateUsers = attributes.filter(({ email }) => !existUsersEmails.includes(email));
 
 		const pendingUsersToInvite = existingUsers.filter((email) => email.isPending);
 
@@ -222,7 +224,7 @@ export class UserService {
 		const usersInvited = await this.sendEmails(
 			owner,
 			Object.fromEntries(createdUsers),
-			invitations[0].role, // same role for all invited users
+			attributes[0].role, // same role for all invited users
 		);
 
 		return { usersInvited, usersCreated: toCreateUsers.map(({ email }) => email) };

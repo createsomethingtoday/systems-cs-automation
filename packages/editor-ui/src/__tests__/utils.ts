@@ -3,20 +3,11 @@ import userEvent from '@testing-library/user-event';
 import type { ISettingsState } from '@/Interface';
 import { UserManagementAuthenticationMethod } from '@/Interface';
 import { defaultSettings } from './defaults';
-import { APP_MODALS_ELEMENT_ID } from '@/constants';
-import type { Mock } from 'vitest';
-import type { Store, StoreDefinition } from 'pinia';
-import type { ComputedRef } from 'vue';
 
-/**
- * Retries the given assertion until it passes or the timeout is reached
- *
- * @example
- * await retry(
- *   () => expect(screen.getByText('Hello')).toBeInTheDocument()
- * );
- */
-export const retry = async (assertion: () => void, { interval = 20, timeout = 1000 } = {}) => {
+export const retry = async (
+	assertion: () => ReturnType<typeof expect>,
+	{ interval = 20, timeout = 1000 } = {},
+) => {
 	return await new Promise((resolve, reject) => {
 		const startTime = Date.now();
 
@@ -24,9 +15,9 @@ export const retry = async (assertion: () => void, { interval = 20, timeout = 10
 			setTimeout(() => {
 				try {
 					resolve(assertion());
-				} catch (error) {
+				} catch (err) {
 					if (Date.now() - startTime > timeout) {
-						reject(error);
+						reject(err);
 					} else {
 						tryAgain();
 					}
@@ -41,8 +32,13 @@ export const retry = async (assertion: () => void, { interval = 20, timeout = 10
 export const waitAllPromises = async () => await new Promise((resolve) => setTimeout(resolve));
 
 export const SETTINGS_STORE_DEFAULT_STATE: ISettingsState = {
-	initialized: true,
 	settings: defaultSettings,
+	promptsData: {
+		message: '',
+		title: '',
+		showContactPrompt: false,
+		showValueSurvey: false,
+	},
 	userManagement: {
 		showSetupOnFirstLoad: false,
 		smtpSetup: false,
@@ -66,17 +62,18 @@ export const SETTINGS_STORE_DEFAULT_STATE: ISettingsState = {
 		loginLabel: '',
 		loginEnabled: false,
 	},
+	onboardingCallPromptEnabled: false,
+	saveDataErrorExecution: 'all',
+	saveDataSuccessExecution: 'all',
+	saveManualExecutions: false,
+	initialized: false,
 	mfa: {
 		enabled: false,
 	},
-	saveDataErrorExecution: 'all',
-	saveDataSuccessExecution: 'all',
-	saveDataProgressExecution: false,
-	saveManualExecutions: false,
 };
 
 export const getDropdownItems = async (dropdownTriggerParent: HTMLElement) => {
-	await userEvent.click(within(dropdownTriggerParent).getByRole('combobox'));
+	await userEvent.click(within(dropdownTriggerParent).getByRole('textbox'));
 	const selectTrigger = dropdownTriggerParent.querySelector(
 		'.select-trigger[aria-describedby]',
 	) as HTMLElement;
@@ -87,52 +84,4 @@ export const getDropdownItems = async (dropdownTriggerParent: HTMLElement) => {
 	await waitFor(() => expect(selectDropdown).toBeInTheDocument());
 
 	return selectDropdown.querySelectorAll('.el-select-dropdown__item');
-};
-
-export const getSelectedDropdownValue = async (items: NodeListOf<Element>) => {
-	const selectedItem = Array.from(items).find((item) => item.classList.contains('selected'));
-	expect(selectedItem).toBeInTheDocument();
-	return selectedItem?.querySelector('p')?.textContent?.trim();
-};
-
-/**
- * Create a container for teleported modals
- *
- * More info: https://test-utils.vuejs.org/guide/advanced/teleport#Mounting-the-Component
- * @returns {HTMLElement} appModals
- */
-export const createAppModals = () => {
-	const appModals = document.createElement('div');
-	appModals.id = APP_MODALS_ELEMENT_ID;
-	document.body.appendChild(appModals);
-	return appModals;
-};
-
-export const cleanupAppModals = () => {
-	document.body.innerHTML = '';
-};
-
-/**
- * Typescript helper for mocking pinia store actions return value
- *
- * @see https://pinia.vuejs.org/cookbook/testing.html#Mocking-the-returned-value-of-an-action
- */
-export const mockedStore = <TStoreDef extends () => unknown>(
-	useStore: TStoreDef,
-): TStoreDef extends StoreDefinition<infer Id, infer State, infer Getters, infer Actions>
-	? Store<
-			Id,
-			State,
-			Record<string, never>,
-			{
-				[K in keyof Actions]: Actions[K] extends (...args: infer Args) => infer ReturnT
-					? Mock<(...args: Args) => ReturnT>
-					: Actions[K];
-			}
-		> & {
-			[K in keyof Getters]: Getters[K] extends ComputedRef<infer T> ? T : never;
-		}
-	: ReturnType<TStoreDef> => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return useStore() as any;
 };

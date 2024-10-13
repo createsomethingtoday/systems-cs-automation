@@ -22,7 +22,7 @@ export async function planAndExecuteAgentExecute(
 	this: IExecuteFunctions,
 	nodeVersion: number,
 ): Promise<INodeExecutionData[][]> {
-	this.logger.debug('Executing PlanAndExecute Agent');
+	this.logger.verbose('Executing PlanAndExecute Agent');
 	const model = (await this.getInputConnectionData(
 		NodeConnectionType.AiLanguageModel,
 		0,

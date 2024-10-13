@@ -1,12 +1,10 @@
 import {
 	NodeOperationError,
-	NodeConnectionType,
 	type IExecuteFunctions,
 	type INodeExecutionData,
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
-import { generatePairedItemData } from '../../../utils/utilities';
 import {
 	type Aggregations,
 	NUMERICAL_AGGREGATIONS,
@@ -16,6 +14,7 @@ import {
 	fieldValueGetter,
 	splitData,
 } from './utils';
+import { generatePairedItemData } from '../../../utils/utilities';
 
 export class Summarize implements INodeType {
 	description: INodeTypeDescription = {
@@ -29,8 +28,8 @@ export class Summarize implements INodeType {
 		defaults: {
 			name: 'Summarize',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Fields to Summarize',
@@ -238,7 +237,7 @@ export class Summarize implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				options: [
 					{

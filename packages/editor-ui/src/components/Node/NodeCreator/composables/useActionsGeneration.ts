@@ -1,5 +1,5 @@
 import type { ActionTypeDescription, ActionsRecord, SimplifiedNodeType } from '@/Interface';
-import { AI_SUBCATEGORY, CUSTOM_API_CALL_KEY, HTTP_REQUEST_NODE_TYPE } from '@/constants';
+import { CUSTOM_API_CALL_KEY, HTTP_REQUEST_NODE_TYPE } from '@/constants';
 import { memoize, startCase } from 'lodash-es';
 import type {
 	ICredentialType,
@@ -12,7 +12,6 @@ import type {
 import { i18n } from '@/plugins/i18n';
 
 import { getCredentialOnlyNodeType } from '@/utils/credentialOnlyNodes';
-import { formatTriggerActionName } from '../utils';
 
 const PLACEHOLDER_RECOMMENDED_ACTION_KEY = 'placeholder_recommended';
 
@@ -61,7 +60,6 @@ function getNodeTypeBase(nodeTypeDescription: INodeTypeDescription, label?: stri
 			categories: [category],
 		},
 		iconUrl: nodeTypeDescription.iconUrl,
-		iconColor: nodeTypeDescription.iconColor,
 		outputs: nodeTypeDescription.outputs,
 		icon: nodeTypeDescription.icon,
 		defaults: nodeTypeDescription.defaults,
@@ -89,36 +87,6 @@ function operationsCategory(nodeTypeDescription: INodeTypeDescription): ActionTy
 		displayOptions: matchedProperty.displayOptions,
 		values: {
 			[matchedProperty.name]: matchedProperty.type === 'multiOptions' ? [item.value] : item.value,
-		},
-	}));
-
-	// Do not return empty category
-	if (items.length === 0) return [];
-
-	return items;
-}
-
-function modeCategory(nodeTypeDescription: INodeTypeDescription): ActionTypeDescription[] {
-	// Mode actions should only be available for AI nodes
-	const isAINode = nodeTypeDescription.codex?.categories?.includes(AI_SUBCATEGORY);
-	if (!isAINode) return [];
-
-	const matchedProperty = nodeTypeDescription.properties.find(
-		(property) => property.name?.toLowerCase() === 'mode',
-	);
-
-	if (!matchedProperty?.options) return [];
-
-	const modeOptions = matchedProperty.options as INodePropertyOptions[];
-
-	const items = modeOptions.map((item: INodePropertyOptions) => ({
-		...getNodeTypeBase(nodeTypeDescription),
-		actionKey: item.value as string,
-		displayName: item.action ?? startCase(item.name),
-		description: item.description ?? '',
-		displayOptions: matchedProperty.displayOptions,
-		values: {
-			[matchedProperty.name]: item.value,
 		},
 	}));
 
@@ -169,7 +137,7 @@ function triggersCategory(nodeTypeDescription: INodeTypeDescription): ActionType
 			displayName:
 				categoryItem.action ??
 				cachedBaseText('nodeCreator.actionsCategory.onEvent', {
-					interpolate: { event: formatTriggerActionName(categoryItem.name) },
+					interpolate: { event: startCase(categoryItem.name) },
 				}),
 			description: categoryItem.description ?? '',
 			displayOptions: matchedProperty.displayOptions,
@@ -261,13 +229,7 @@ function resourceCategories(nodeTypeDescription: INodeTypeDescription): ActionTy
 export function useActionsGenerator() {
 	function generateNodeActions(node: INodeTypeDescription | undefined) {
 		if (!node) return [];
-		if (node.codex?.subcategories?.AI?.includes('Tools')) return [];
-		return [
-			...triggersCategory(node),
-			...operationsCategory(node),
-			...resourceCategories(node),
-			...modeCategory(node),
-		];
+		return [...triggersCategory(node), ...operationsCategory(node), ...resourceCategories(node)];
 	}
 	function filterActions(actions: ActionTypeDescription[]) {
 		// Do not show single action nodes
@@ -292,7 +254,6 @@ export function useActionsGenerator() {
 			group,
 			icon,
 			iconUrl,
-			iconColor,
 			badgeIconUrl,
 			outputs,
 			codex,
@@ -305,7 +266,6 @@ export function useActionsGenerator() {
 			name,
 			group,
 			icon,
-			iconColor,
 			iconUrl,
 			badgeIconUrl,
 			outputs,

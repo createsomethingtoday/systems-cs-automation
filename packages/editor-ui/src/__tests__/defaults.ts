@@ -1,13 +1,49 @@
-import type { FrontendSettings } from '@n8n/api-types';
+import type { INodeTypeData, INodeTypeDescription, IN8nUISettings } from 'n8n-workflow';
+import { AGENT_NODE_TYPE, CHAT_TRIGGER_NODE_TYPE, MANUAL_TRIGGER_NODE_TYPE } from '@/constants';
+import nodeTypesJson from '../../../nodes-base/dist/types/nodes.json';
+import aiNodeTypesJson from '../../../@n8n/nodes-langchain/dist/types/nodes.json';
 
-export const defaultSettings: FrontendSettings = {
-	databaseType: 'sqlite',
-	isDocker: false,
-	pruning: {
-		isEnabled: false,
-		maxAge: 0,
-		maxCount: 0,
+const allNodeTypes = [...nodeTypesJson, ...aiNodeTypesJson];
+
+function findNodeWithName(name: string): INodeTypeDescription {
+	return allNodeTypes.find((node) => node.name === name) as INodeTypeDescription;
+}
+
+export const testingNodeTypes: INodeTypeData = {
+	[MANUAL_TRIGGER_NODE_TYPE]: {
+		sourcePath: '',
+		type: {
+			description: findNodeWithName(MANUAL_TRIGGER_NODE_TYPE),
+		},
 	},
+	[CHAT_TRIGGER_NODE_TYPE]: {
+		sourcePath: '',
+		type: {
+			description: findNodeWithName(CHAT_TRIGGER_NODE_TYPE),
+		},
+	},
+	[AGENT_NODE_TYPE]: {
+		sourcePath: '',
+		type: {
+			description: findNodeWithName(AGENT_NODE_TYPE),
+		},
+	},
+};
+
+export const defaultMockNodeTypes: INodeTypeData = {
+	[MANUAL_TRIGGER_NODE_TYPE]: testingNodeTypes[MANUAL_TRIGGER_NODE_TYPE],
+};
+
+export function mockNodeTypesToArray(nodeTypes: INodeTypeData): INodeTypeDescription[] {
+	return Object.values(nodeTypes).map(
+		(nodeType) => nodeType.type.description as INodeTypeDescription,
+	);
+}
+
+export const defaultMockNodeTypesArray: INodeTypeDescription[] =
+	mockNodeTypesToArray(defaultMockNodeTypes);
+
+export const defaultSettings: IN8nUISettings = {
 	allowedModules: {},
 	communityNodesEnabled: false,
 	defaultLocale: '',
@@ -16,7 +52,6 @@ export const defaultSettings: FrontendSettings = {
 	endpointFormWaiting: '',
 	endpointWebhook: '',
 	endpointWebhookTest: '',
-	endpointWebhookWaiting: '',
 	enterprise: {
 		sharing: false,
 		ldap: false,
@@ -24,7 +59,7 @@ export const defaultSettings: FrontendSettings = {
 		logStreaming: false,
 		debugInEditor: false,
 		advancedExecutionFilters: false,
-		variables: false,
+		variables: true,
 		sourceControl: false,
 		auditLogs: false,
 		showNonProdBanner: false,
@@ -47,10 +82,12 @@ export const defaultSettings: FrontendSettings = {
 	hideUsagePage: false,
 	hiringBannerEnabled: false,
 	instanceId: '',
-	license: { environment: 'development', consumerId: 'unknown' },
+	isNpmAvailable: false,
+	license: { environment: 'development' },
 	logLevel: 'info',
 	maxExecutionTimeout: 0,
 	oauthCallbackUrls: { oauth1: '', oauth2: '' },
+	onboardingCallPromptEnabled: false,
 	personalizationSurveyEnabled: false,
 	releaseChannel: 'stable',
 	posthog: {
@@ -66,7 +103,6 @@ export const defaultSettings: FrontendSettings = {
 	saveDataErrorExecution: 'DEFAULT',
 	saveDataSuccessExecution: 'DEFAULT',
 	saveManualExecutions: false,
-	saveExecutionProgress: false,
 	sso: {
 		ldap: { loginEnabled: false, loginLabel: '' },
 		saml: { loginEnabled: false, loginLabel: '' },
@@ -88,8 +124,6 @@ export const defaultSettings: FrontendSettings = {
 		quota: 10,
 	},
 	versionCli: '',
-	nodeJsVersion: '',
-	concurrency: -1,
 	versionNotifications: {
 		enabled: true,
 		endpoint: '',
@@ -111,17 +145,12 @@ export const defaultSettings: FrontendSettings = {
 	mfa: {
 		enabled: false,
 	},
-	askAi: {
+	ai: {
 		enabled: false,
+		provider: '',
 	},
 	workflowHistory: {
 		pruneTime: 0,
 		licensePruneTime: 0,
-	},
-	security: {
-		blockFileAccessToN8nFiles: false,
-	},
-	aiAssistant: {
-		enabled: false,
 	},
 };

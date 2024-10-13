@@ -1,50 +1,33 @@
+import type { Request, Response, RequestHandler } from 'express';
+import type { BooleanLicenseFeature } from '@/Interfaces';
 import type { Scope } from '@n8n/permissions';
-import type { RequestHandler } from 'express';
-import type { Class } from 'n8n-core';
-
-import type { BooleanLicenseFeature } from '@/interfaces';
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-export type Arg = { type: 'body' | 'query' } | { type: 'param'; key: string };
+export type LicenseMetadata = Record<string, BooleanLicenseFeature[]>;
 
-export interface RateLimit {
-	/**
-	 * The maximum number of requests to allow during the `window` before rate limiting the client.
-	 * @default 5
-	 */
-	limit?: number;
-	/**
-	 * How long we should remember the requests.
-	 * @default 300_000 (5 minutes)
-	 */
-	windowMs?: number;
-}
+export type RouteScopeMetadata = {
+	[handlerName: string]: {
+		scopes: Scope[];
+		globalOnly: boolean;
+	};
+};
 
-export type HandlerName = string;
-
-export interface AccessScope {
-	scope: Scope;
-	globalOnly: boolean;
+export interface MiddlewareMetadata {
+	handlerName: string;
 }
 
 export interface RouteMetadata {
 	method: Method;
 	path: string;
+	handlerName: string;
 	middlewares: RequestHandler[];
 	usesTemplates: boolean;
 	skipAuth: boolean;
-	rateLimit?: boolean | RateLimit;
-	licenseFeature?: BooleanLicenseFeature;
-	accessScope?: AccessScope;
-	args: Arg[];
+	rateLimit: boolean;
 }
 
-export interface ControllerMetadata {
-	basePath: `/${string}`;
-	middlewares: HandlerName[];
-	routes: Map<HandlerName, RouteMetadata>;
-}
-
-export type Controller = Class<object> &
-	Record<HandlerName, (...args: unknown[]) => Promise<unknown>>;
+export type Controller = Record<
+	RouteMetadata['handlerName'],
+	(req?: Request, res?: Response) => Promise<unknown>
+>;

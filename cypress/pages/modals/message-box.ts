@@ -8,7 +8,6 @@ export class MessageBox extends BasePage {
 		confirm: () => this.getters.modal().find('.btn--confirm').first(),
 		cancel: () => this.getters.modal().find('.btn--cancel').first(),
 	};
-
 	actions = {
 		confirm: () => {
 			this.getters.confirm().click({ force: true });

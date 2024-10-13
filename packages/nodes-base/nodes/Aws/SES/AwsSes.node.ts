@@ -1,4 +1,3 @@
-import qs from 'node:querystring';
 import type {
 	IExecuteFunctions,
 	IDataObject,
@@ -8,13 +7,13 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import { awsApiRequestSOAP, awsApiRequestSOAPAllItems } from './GenericFunctions';
 
 function setParameter(params: string[], base: string, values: string[]) {
 	for (let i = 0; i < values.length; i++) {
-		params.push(`${base}.${i + 1}=${encodeURIComponent(values[i])}`);
+		params.push(`${base}.${i + 1}=${values[i]}`);
 	}
 }
 
@@ -30,8 +29,8 @@ export class AwsSes implements INodeType {
 		defaults: {
 			name: 'AWS SES',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'aws',
@@ -459,7 +458,7 @@ export class AwsSes implements INodeType {
 				},
 				default: '',
 				description:
-					'The ARN of the template to use when sending this email. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+					'The ARN of the template to use when sending this email. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'From Email',
@@ -844,20 +843,22 @@ export class AwsSes implements INodeType {
 
 						const templateSubject = this.getNodeParameter('templateSubject', i) as string;
 
+						const params = [
+							'Action=CreateCustomVerificationEmailTemplate',
+							`FailureRedirectionURL=${failureRedirectionURL}`,
+							`FromEmailAddress=${email}`,
+							`SuccessRedirectionURL=${successRedirectionURL}`,
+							`TemplateContent=${templateContent}`,
+							`TemplateName=${templateName}`,
+							`TemplateSubject=${templateSubject}`,
+						];
+
 						responseData = await awsApiRequestSOAP.call(
 							this,
 							'email',
 							'POST',
 							'',
-							qs.stringify({
-								Action: 'CreateCustomVerificationEmailTemplate',
-								FromEmailAddress: email,
-								SuccessRedirectionURL: successRedirectionURL,
-								FailureRedirectionURL: failureRedirectionURL,
-								TemplateName: templateName,
-								TemplateSubject: templateSubject,
-								TemplateContent: templateContent,
-							}),
+							params.join('&'),
 						);
 
 						responseData = responseData.CreateCustomVerificationEmailTemplateResponse;
@@ -1011,7 +1012,7 @@ export class AwsSes implements INodeType {
 
 						const params = [
 							`Message.Subject.Data=${encodeURIComponent(subject)}`,
-							`Source=${encodeURIComponent(fromEmail)}`,
+							`Source=${fromEmail}`,
 						];
 
 						if (isBodyHtml) {

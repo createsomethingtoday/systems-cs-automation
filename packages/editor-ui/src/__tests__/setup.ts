@@ -22,9 +22,7 @@ Range.prototype.getClientRects = vi.fn(() => ({
 
 export class IntersectionObserver {
 	root = null;
-
 	rootMargin = '';
-
 	thresholds = [];
 
 	disconnect() {
@@ -46,18 +44,3 @@ export class IntersectionObserver {
 
 window.IntersectionObserver = IntersectionObserver;
 global.IntersectionObserver = IntersectionObserver;
-
-// Mocks for useDeviceSupport
-Object.defineProperty(window, 'matchMedia', {
-	writable: true,
-	value: vi.fn().mockImplementation((query) => ({
-		matches: true,
-		media: query,
-		onchange: null,
-		addListener: vi.fn(),
-		removeListener: vi.fn(),
-		addEventListener: vi.fn(),
-		removeEventListener: vi.fn(),
-		dispatchEvent: vi.fn(),
-	})),
-});

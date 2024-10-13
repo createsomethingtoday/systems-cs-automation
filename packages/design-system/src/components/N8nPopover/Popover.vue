@@ -1,8 +1,15 @@
-<script setup lang="ts">
-import { ElPopover, popoverProps } from 'element-plus';
+<script lang="ts">
+import { ElPopover } from 'element-plus';
+import { defineComponent } from 'vue';
 
-defineProps({
-	...popoverProps,
+export default defineComponent({
+	name: 'N8nPopover',
+	components: {
+		ElPopover,
+	},
+	props: {
+		...ElPopover.props,
+	},
 });
 </script>
 

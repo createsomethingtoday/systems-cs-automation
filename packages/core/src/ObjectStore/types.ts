@@ -1,5 +1,4 @@
 import type { AxiosResponseHeaders, ResponseType } from 'axios';
-
 import type { BinaryData } from '../BinaryData/types';
 
 export type RawListPage = {

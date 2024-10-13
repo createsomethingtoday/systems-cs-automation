@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { rocketchatApiRequest, validateJSON } from './GenericFunctions';
 
@@ -55,8 +54,8 @@ export class Rocketchat implements INodeType {
 		defaults: {
 			name: 'RocketChat',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'rocketchatApi',
@@ -140,7 +139,7 @@ export class Rocketchat implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					show: {

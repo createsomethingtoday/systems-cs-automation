@@ -23,7 +23,7 @@ const initialState = {
 	},
 	[STORES.USERS]: {
 		currentUserId: 'aaa-bbb',
-		usersById: {
+		users: {
 			'aaa-bbb': {
 				id: 'aaa-bbb',
 				role: ROLE.Owner,
@@ -63,7 +63,9 @@ describe('BannerStack', () => {
 
 	it('should dismiss banner on click', async () => {
 		const { getByTestId } = renderComponent();
-		const dismissBannerSpy = vi.spyOn(uiStore, 'dismissBanner').mockImplementation(async () => {});
+		const dismissBannerSpy = vi
+			.spyOn(uiStore, 'dismissBanner')
+			.mockImplementation(async (banner, mode) => {});
 		expect(getByTestId('banners-V1')).toBeInTheDocument();
 		const closeTrialBannerButton = getByTestId('banner-V1-close');
 		expect(closeTrialBannerButton).toBeInTheDocument();
@@ -73,7 +75,9 @@ describe('BannerStack', () => {
 
 	it('should permanently dismiss banner on click', async () => {
 		const { getByTestId } = renderComponent();
-		const dismissBannerSpy = vi.spyOn(uiStore, 'dismissBanner').mockImplementation(async () => {});
+		const dismissBannerSpy = vi
+			.spyOn(uiStore, 'dismissBanner')
+			.mockImplementation(async (banner, mode) => {});
 
 		const permanentlyDismissBannerLink = getByTestId('banner-confirm-v1');
 		expect(permanentlyDismissBannerLink).toBeInTheDocument();

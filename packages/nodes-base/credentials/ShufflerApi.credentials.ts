@@ -3,7 +3,6 @@ import type {
 	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
-	Icon,
 } from 'n8n-workflow';
 
 export class ShufflerApi implements ICredentialType {
@@ -11,7 +10,7 @@ export class ShufflerApi implements ICredentialType {
 
 	displayName = 'Shuffler API';
 
-	icon: Icon = 'file:icons/Shuffler.svg';
+	icon = 'file:icons/Shuffler.svg';
 
 	documentationUrl = 'shuffler';
 

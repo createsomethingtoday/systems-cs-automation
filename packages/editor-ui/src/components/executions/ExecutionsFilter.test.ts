@@ -14,11 +14,9 @@ const defaultFilterState: ExecutionFilterType = {
 	status: 'all',
 	workflowId: 'all',
 	tags: [],
-	annotationTags: [],
 	startDate: '',
 	endDate: '',
 	metadata: [{ key: '', value: '' }],
-	vote: 'all',
 };
 
 const workflowDataFactory = (): IWorkflowShortResponse => ({
@@ -96,7 +94,7 @@ describe('ExecutionsFilter', () => {
 	])(
 		'renders in %s environment on %s deployment with advancedExecutionFilters %s',
 		async (environment, deployment, advancedExecutionFilters, workflows) => {
-			const { getByTestId, queryByTestId } = renderComponent({
+			const { html, getByTestId, queryByTestId, queryAllByTestId } = renderComponent({
 				props: { workflows },
 				pinia: createTestingPinia({
 					initialState: merge(initialState, {

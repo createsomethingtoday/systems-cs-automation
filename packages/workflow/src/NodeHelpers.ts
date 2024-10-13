@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
@@ -10,9 +12,6 @@ import get from 'lodash/get';
 import isEqual from 'lodash/isEqual';
 import uniqBy from 'lodash/uniqBy';
 
-import { SINGLE_EXECUTION_NODES } from './Constants';
-import { ApplicationError } from './errors/application.error';
-import { NodeConnectionType } from './Interfaces';
 import type {
 	FieldType,
 	IContextObject,
@@ -37,8 +36,8 @@ import type {
 	IWorkflowExecuteAdditionalData,
 	NodeParameterValue,
 	ResourceMapperValue,
+	ConnectionTypes,
 	INodeTypeDescription,
-	INodeTypeBaseDescription,
 	INodeOutputConfiguration,
 	INodeInputConfiguration,
 	GenericValue,
@@ -46,15 +45,17 @@ import type {
 	NodeHint,
 	INodeExecutionData,
 } from './Interfaces';
-import { validateFilterParameter } from './NodeParameters/FilterParameter';
 import {
 	isFilterValue,
 	isResourceMapperValue,
 	isValidResourceLocatorParameterValue,
 } from './type-guards';
-import { validateFieldType } from './TypeValidation';
 import { deepCopy } from './utils';
+
 import type { Workflow } from './Workflow';
+import { validateFilterParameter } from './NodeParameters/FilterParameter';
+import { validateFieldType } from './TypeValidation';
+import { ApplicationError } from './errors/application.error';
 
 export const cronNodeOptions: INodePropertyCollection[] = [
 	{
@@ -259,7 +260,7 @@ const commonPollingParameters: INodeProperties[] = [
 	},
 ];
 
-export const commonCORSParameters: INodeProperties[] = [
+const commonCORSParameters: INodeProperties[] = [
 	{
 		displayName: 'Allowed Origins (CORS)',
 		name: 'allowedOrigins',
@@ -269,250 +270,6 @@ export const commonCORSParameters: INodeProperties[] = [
 			'Comma-separated list of URLs allowed for cross-origin non-preflight requests. Use * (default) to allow all origins.',
 	},
 ];
-
-const declarativeNodeOptionParameters: INodeProperties = {
-	displayName: 'Request Options',
-	name: 'requestOptions',
-	type: 'collection',
-	isNodeSetting: true,
-	placeholder: 'Add Option',
-	default: {},
-	options: [
-		{
-			displayName: 'Batching',
-			name: 'batching',
-			placeholder: 'Add Batching',
-			type: 'fixedCollection',
-			typeOptions: {
-				multipleValues: false,
-			},
-			default: {
-				batch: {},
-			},
-			options: [
-				{
-					displayName: 'Batching',
-					name: 'batch',
-					values: [
-						{
-							displayName: 'Items per Batch',
-							name: 'batchSize',
-							type: 'number',
-							typeOptions: {
-								minValue: -1,
-							},
-							default: 50,
-							description:
-								'Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.',
-						},
-						{
-							displayName: 'Batch Interval (ms)',
-							name: 'batchInterval',
-							type: 'number',
-							typeOptions: {
-								minValue: 0,
-							},
-							default: 1000,
-							description: 'Time (in milliseconds) between each batch of requests. 0 for disabled.',
-						},
-					],
-				},
-			],
-		},
-		{
-			displayName: 'Ignore SSL Issues',
-			name: 'allowUnauthorizedCerts',
-			type: 'boolean',
-			noDataExpression: true,
-			default: false,
-			description:
-				'Whether to accept the response even if SSL certificate validation is not possible',
-		},
-		{
-			displayName: 'Proxy',
-			name: 'proxy',
-			type: 'string',
-			default: '',
-			placeholder: 'e.g. http://myproxy:3128',
-			description:
-				'HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128',
-		},
-		{
-			displayName: 'Timeout',
-			name: 'timeout',
-			type: 'number',
-			typeOptions: {
-				minValue: 1,
-			},
-			default: 10000,
-			description:
-				'Time in ms to wait for the server to send response headers (and start the response body) before aborting the request',
-		},
-	],
-};
-
-/**
- * Modifies the description of the passed in object, such that it can be used
- * as an AI Agent Tool.
- * Returns the modified item (not copied)
- */
-export function convertNodeToAiTool<
-	T extends object & { description: INodeTypeDescription | INodeTypeBaseDescription },
->(item: T): T {
-	// quick helper function for type-guard down below
-	function isFullDescription(obj: unknown): obj is INodeTypeDescription {
-		return typeof obj === 'object' && obj !== null && 'properties' in obj;
-	}
-
-	if (isFullDescription(item.description)) {
-		item.description.name += 'Tool';
-		item.description.inputs = [];
-		item.description.outputs = [NodeConnectionType.AiTool];
-		item.description.displayName += ' Tool';
-		delete item.description.usableAsTool;
-
-		const hasResource = item.description.properties.some((prop) => prop.name === 'resource');
-		const hasOperation = item.description.properties.some((prop) => prop.name === 'operation');
-
-		if (!item.description.properties.map((prop) => prop.name).includes('toolDescription')) {
-			const descriptionType: INodeProperties = {
-				displayName: 'Tool Description',
-				name: 'descriptionType',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					{
-						name: 'Set Automatically',
-						value: 'auto',
-						description: 'Automatically set based on resource and operation',
-					},
-					{
-						name: 'Set Manually',
-						value: 'manual',
-						description: 'Manually set the description',
-					},
-				],
-				default: 'auto',
-			};
-
-			const descProp: INodeProperties = {
-				displayName: 'Description',
-				name: 'toolDescription',
-				type: 'string',
-				default: item.description.description,
-				required: true,
-				typeOptions: { rows: 2 },
-				description:
-					'Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often',
-				placeholder: `e.g. ${item.description.description}`,
-			};
-
-			const noticeProp: INodeProperties = {
-				displayName: 'Use the expression {{ $fromAI() }} for any data to be filled by the model',
-				name: 'notice',
-				type: 'notice',
-				default: '',
-			};
-
-			item.description.properties.unshift(descProp);
-
-			// If node has resource or operation we can determine pre-populate tool description based on it
-			// so we add the descriptionType property as the first property
-			if (hasResource || hasOperation) {
-				item.description.properties.unshift(descriptionType);
-
-				descProp.displayOptions = {
-					show: {
-						descriptionType: ['manual'],
-					},
-				};
-			}
-
-			item.description.properties.unshift(noticeProp);
-		}
-	}
-
-	item.description.codex = {
-		categories: ['AI'],
-		subcategories: {
-			AI: ['Tools'],
-			Tools: ['Other Tools'],
-		},
-	};
-	return item;
-}
-
-/**
- * Determines if the provided node type has any output types other than the main connection type.
- * @param typeDescription The node's type description to check.
- */
-export function isSubNodeType(
-	typeDescription: Pick<INodeTypeDescription, 'outputs'> | null,
-): boolean {
-	if (!typeDescription?.outputs || typeof typeDescription.outputs === 'string') {
-		return false;
-	}
-	const outputTypes = getConnectionTypes(typeDescription.outputs);
-	return outputTypes
-		? outputTypes.filter((output) => output !== NodeConnectionType.Main).length > 0
-		: false;
-}
-
-/** Augments additional `Request Options` property on declarative node-type */
-export function applyDeclarativeNodeOptionParameters(nodeType: INodeType): void {
-	if (
-		nodeType.execute ||
-		nodeType.trigger ||
-		nodeType.webhook ||
-		nodeType.description.polling ||
-		isSubNodeType(nodeType.description)
-	) {
-		return;
-	}
-
-	const parameters = nodeType.description.properties;
-
-	if (!parameters) {
-		return;
-	}
-
-	// Was originally under "options" instead of "requestOptions" so the chance
-	// that that existed was quite high. With this name the chance is actually
-	// very low that it already exists but lets leave it in anyway to be sure.
-	const existingRequestOptionsIndex = parameters.findIndex(
-		(parameter) => parameter.name === 'requestOptions',
-	);
-	if (existingRequestOptionsIndex !== -1) {
-		parameters[existingRequestOptionsIndex] = {
-			...declarativeNodeOptionParameters,
-			options: [
-				...(declarativeNodeOptionParameters.options || []),
-				...(parameters[existingRequestOptionsIndex]?.options || []),
-			],
-		};
-
-		const options = parameters[existingRequestOptionsIndex]?.options;
-
-		if (options) {
-			options.sort((a, b) => {
-				if ('displayName' in a && 'displayName' in b) {
-					if (a.displayName < b.displayName) {
-						return -1;
-					}
-					if (a.displayName > b.displayName) {
-						return 1;
-					}
-				}
-
-				return 0;
-			});
-		}
-	} else {
-		parameters.push(declarativeNodeOptionParameters);
-	}
-
-	return;
-}
 
 /**
  * Apply special parameters which should be added to nodeTypes depending on their type or configuration
@@ -531,8 +288,6 @@ export function applySpecialNodeParameters(nodeType: INodeType): void {
 			];
 		else properties.push(...commonCORSParameters);
 	}
-
-	applyDeclarativeNodeOptionParameters(nodeType);
 }
 
 const getPropertyValues = (
@@ -610,9 +365,6 @@ const checkConditions = (
 				}
 				if (key === 'regex') {
 					return new RegExp(targetValue as string).test(propertyValue as string);
-				}
-				if (key === 'exists') {
-					return propertyValue !== null && propertyValue !== undefined && propertyValue !== '';
 				}
 				return false;
 			});
@@ -1335,8 +1087,8 @@ export function getNodeWebhookUrl(
 }
 
 export function getConnectionTypes(
-	connections: Array<NodeConnectionType | INodeInputConfiguration | INodeOutputConfiguration>,
-): NodeConnectionType[] {
+	connections: Array<ConnectionTypes | INodeInputConfiguration | INodeOutputConfiguration>,
+): ConnectionTypes[] {
 	return connections
 		.map((connection) => {
 			if (typeof connection === 'string') {
@@ -1351,7 +1103,7 @@ export function getNodeInputs(
 	workflow: Workflow,
 	node: INode,
 	nodeTypeData: INodeTypeDescription,
-): Array<NodeConnectionType | INodeInputConfiguration> {
+): Array<ConnectionTypes | INodeInputConfiguration> {
 	if (Array.isArray(nodeTypeData?.inputs)) {
 		return nodeTypeData.inputs;
 	}
@@ -1363,7 +1115,7 @@ export function getNodeInputs(
 			nodeTypeData.inputs,
 			'internal',
 			{},
-		) || []) as NodeConnectionType[];
+		) || []) as ConnectionTypes[];
 	} catch (e) {
 		console.warn('Could not calculate inputs dynamically for node: ', node.name);
 		return [];
@@ -1443,8 +1195,8 @@ export function getNodeOutputs(
 	workflow: Workflow,
 	node: INode,
 	nodeTypeData: INodeTypeDescription,
-): Array<NodeConnectionType | INodeOutputConfiguration> {
-	let outputs: Array<NodeConnectionType | INodeOutputConfiguration> = [];
+): Array<ConnectionTypes | INodeOutputConfiguration> {
+	let outputs: Array<ConnectionTypes | INodeOutputConfiguration> = [];
 
 	if (Array.isArray(nodeTypeData.outputs)) {
 		outputs = nodeTypeData.outputs;
@@ -1456,7 +1208,7 @@ export function getNodeOutputs(
 				nodeTypeData.outputs,
 				'internal',
 				{},
-			) || []) as NodeConnectionType[];
+			) || []) as ConnectionTypes[];
 		} catch (e) {
 			console.warn('Could not calculate outputs dynamically for node: ', node.name);
 		}
@@ -1479,7 +1231,7 @@ export function getNodeOutputs(
 			...outputs,
 			{
 				category: 'error',
-				type: NodeConnectionType.Main,
+				type: 'main',
 				displayName: 'Error',
 			},
 		];
@@ -1670,7 +1422,7 @@ export function addToIssuesIfMissing(
 		(nodeProperties.type === 'multiOptions' && Array.isArray(value) && value.length === 0) ||
 		(nodeProperties.type === 'dateTime' && value === undefined) ||
 		(nodeProperties.type === 'options' && (value === '' || value === undefined)) ||
-		((nodeProperties.type === 'resourceLocator' || nodeProperties.type === 'workflowSelector') &&
+		(nodeProperties.type === 'resourceLocator' &&
 			!isValidResourceLocatorParameterValue(value as INodeParameterResourceLocator))
 	) {
 		// Parameter is required but empty
@@ -1744,10 +1496,7 @@ export function getParameterIssues(
 		}
 	}
 
-	if (
-		(nodeProperties.type === 'resourceLocator' || nodeProperties.type === 'workflowSelector') &&
-		isDisplayed
-	) {
+	if (nodeProperties.type === 'resourceLocator' && isDisplayed) {
 		const value = getParameterValueByPath(nodeValues, nodeProperties.name, path);
 		if (isINodeParameterResourceLocator(value)) {
 			const mode = nodeProperties.modes?.find((option) => option.name === value.mode);
@@ -1998,20 +1747,4 @@ export function getCredentialsForNode(
 	}
 
 	return object.description.credentials ?? [];
-}
-
-export function isSingleExecution(type: string, parameters: INodeParameters): boolean {
-	const singleExecutionCase = SINGLE_EXECUTION_NODES[type];
-
-	if (singleExecutionCase) {
-		for (const parameter of Object.keys(singleExecutionCase)) {
-			if (!singleExecutionCase[parameter].includes(parameters[parameter] as NodeParameterValue)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	return false;
 }

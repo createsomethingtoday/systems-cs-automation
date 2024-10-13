@@ -1,14 +1,13 @@
-import { toBase64, fromBase64 } from 'js-base64';
 import SHA from 'jssha';
-import { DateTime } from 'luxon';
 import MD5 from 'md5';
+import { toBase64, fromBase64 } from 'js-base64';
 import { titleCase } from 'title-case';
-import { transliterate } from 'transliteration';
-
 import type { Extension, ExtensionMap } from './Extensions';
-import { toDateTime as numberToDateTime } from './NumberExtensions';
+import { transliterate } from 'transliteration';
 import { ExpressionExtensionError } from '../errors/expression-extension.error';
+import { DateTime } from 'luxon';
 import { tryToParseDateTime } from '../TypeValidation';
+import { toDateTime as numberToDateTime } from './NumberExtensions';
 
 export const SupportedHashAlgorithms = [
 	'md5',
@@ -677,7 +676,7 @@ isUrl.doc = {
 
 isEmpty.doc = {
 	name: 'isEmpty',
-	description: 'Returns <code>true</code> if the string has no characters or is <code>null</code>',
+	description: 'Returns <code>true</code> if the string has no characters.',
 	section: 'validation',
 	returnType: 'boolean',
 	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/strings/#string-isEmpty',

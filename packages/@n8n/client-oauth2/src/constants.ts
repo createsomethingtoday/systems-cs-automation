@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Headers } from './types';
 
 export const DEFAULT_URL_BASE = 'https://example.org/';

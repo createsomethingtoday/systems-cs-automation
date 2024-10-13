@@ -11,7 +11,7 @@ import type {
 	INodeTypeDescription,
 	IRequestOptions,
 } from 'n8n-workflow';
-import { NodeConnectionType, deepCopy, randomInt } from 'n8n-workflow';
+import { deepCopy } from 'n8n-workflow';
 
 import { capitalCase } from 'change-case';
 import {
@@ -51,8 +51,8 @@ export class Odoo implements INodeType {
 		defaults: {
 			name: 'Odoo',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'odooApi',
@@ -115,8 +115,8 @@ export class Odoo implements INodeType {
 				const db = odooGetDBName(credentials.db as string, url);
 				const userID = await odooGetUserID.call(this, db, username, password, url);
 
-				const response = await odooGetModelFields.call(this, db, userID, password, resource, url);
-				const options = Object.values(response).map((field) => {
+				const responce = await odooGetModelFields.call(this, db, userID, password, resource, url);
+				const options = Object.values(responce).map((field) => {
 					const optionField = field as { [key: string]: string };
 					let name = '';
 					try {
@@ -158,12 +158,12 @@ export class Odoo implements INodeType {
 							['name', 'model', 'modules'],
 						],
 					},
-					id: randomInt(100),
+					id: Math.floor(Math.random() * 100),
 				};
 
-				const response = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
+				const responce = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
 
-				const options = response.map((model) => {
+				const options = responce.map((model) => {
 					return {
 						name: model.name,
 						value: model.model,
@@ -188,12 +188,12 @@ export class Odoo implements INodeType {
 						method: 'execute',
 						args: [db, userID, password, 'res.country.state', 'search_read', [], ['id', 'name']],
 					},
-					id: randomInt(100),
+					id: Math.floor(Math.random() * 100),
 				};
 
-				const response = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
+				const responce = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
 
-				const options = response.map((state) => {
+				const options = responce.map((state) => {
 					return {
 						name: state.name as string,
 						value: state.id,
@@ -217,12 +217,12 @@ export class Odoo implements INodeType {
 						method: 'execute',
 						args: [db, userID, password, 'res.country', 'search_read', [], ['id', 'name']],
 					},
-					id: randomInt(100),
+					id: Math.floor(Math.random() * 100),
 				};
 
-				const response = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
+				const responce = (await odooJSONRPCRequest.call(this, body, url)) as IDataObject[];
 
-				const options = response.map((country) => {
+				const options = responce.map((country) => {
 					return {
 						name: country.name as string,
 						value: country.id,
@@ -252,7 +252,7 @@ export class Odoo implements INodeType {
 								credentials?.password,
 							],
 						},
-						id: randomInt(100),
+						id: Math.floor(Math.random() * 100),
 					};
 
 					const options: IRequestOptions = {

@@ -1,20 +1,18 @@
-import { mock } from 'jest-mock-extended';
+import type { SuperTest, Test } from 'supertest';
+import { createOwner } from '../shared/db/users';
+import { setupTestServer } from '../shared/utils';
+import * as AdditionalData from '@/WorkflowExecuteAdditionalData';
 import type {
 	INodeListSearchResult,
 	IWorkflowExecuteAdditionalData,
 	ResourceMapperFields,
 } from 'n8n-workflow';
-
-import { DynamicNodeParametersService } from '@/services/dynamic-node-parameters.service';
-import * as AdditionalData from '@/workflow-execute-additional-data';
-
-import { createOwner } from '../shared/db/users';
-import type { SuperAgentTest } from '../shared/types';
-import { setupTestServer } from '../shared/utils';
+import { mock } from 'jest-mock-extended';
+import { DynamicNodeParametersService } from '@/services/dynamicNodeParameters.service';
 
 describe('DynamicNodeParametersController', () => {
 	const testServer = setupTestServer({ endpointGroups: ['dynamic-node-parameters'] });
-	let ownerAgent: SuperAgentTest;
+	let ownerAgent: SuperTest<Test>;
 
 	beforeAll(async () => {
 		const owner = await createOwner();
@@ -41,7 +39,7 @@ describe('DynamicNodeParametersController', () => {
 				.post('/dynamic-node-parameters/options')
 				.send({
 					...commonRequestParams,
-					loadOptions: {},
+					loadOptions: 'loadOptions',
 				})
 				.expect(200);
 		});

@@ -1,6 +1,7 @@
 import {
 	HTTP_REQUEST_NODE_NAME,
 	IF_NODE_NAME,
+	INSTANCE_OWNER,
 	MANUAL_TRIGGER_NODE_NAME,
 	EDIT_FIELDS_SET_NODE_NAME,
 } from '../constants';
@@ -18,9 +19,9 @@ describe('Debug', () => {
 	it('should be able to debug executions', () => {
 		cy.intercept('GET', '/rest/executions?filter=*').as('getExecutions');
 		cy.intercept('GET', '/rest/executions/*').as('getExecution');
-		cy.intercept('POST', '/rest/workflows/**/run?**').as('postWorkflowRun');
+		cy.intercept('POST', '/rest/workflows/**/run').as('postWorkflowRun');
 
-		cy.signinAsOwner();
+		cy.signin({ email: INSTANCE_OWNER.email, password: INSTANCE_OWNER.password });
 
 		workflowPage.actions.visit();
 

@@ -6,13 +6,8 @@ import type {
 } from 'n8n-workflow';
 import { updateDisplayOptions, NodeOperationError } from 'n8n-workflow';
 import { apiRequest } from '../../transport';
-import { modelRLC } from '../descriptions';
 
 const properties: INodeProperties[] = [
-	{
-		...modelRLC('imageModelSearch'),
-		displayOptions: { show: { '@version': [{ _cnd: { gte: 1.4 } }] } },
-	},
 	{
 		displayName: 'Text Input',
 		name: 'text',
@@ -128,11 +123,7 @@ const displayOptions = {
 export const description = updateDisplayOptions(displayOptions, properties);
 
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
-	let model = 'gpt-4-vision-preview';
-	if (this.getNode().typeVersion >= 1.4) {
-		model = this.getNodeParameter('modelId', i, 'gpt-4o', { extractValue: true }) as string;
-	}
-
+	const model = 'gpt-4-vision-preview';
 	const text = this.getNodeParameter('text', i, '') as string;
 	const inputType = this.getNodeParameter('inputType', i) as string;
 	const options = this.getNodeParameter('options', i, {});

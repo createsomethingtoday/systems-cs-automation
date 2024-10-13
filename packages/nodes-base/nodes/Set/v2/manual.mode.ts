@@ -225,7 +225,7 @@ export async function execute(
 				newData[name] = value;
 			}
 
-			return composeReturnItem.call(this, i, item, newData, options, node.typeVersion);
+			return composeReturnItem.call(this, i, item, newData, options);
 		}
 
 		const assignmentCollection = this.getNodeParameter(
@@ -247,7 +247,7 @@ export async function execute(
 				return [name, value];
 			}),
 		);
-		return composeReturnItem.call(this, i, item, newData, options, node.typeVersion);
+		return composeReturnItem.call(this, i, item, newData, options);
 	} catch (error) {
 		if (this.continueOnFail()) {
 			return { json: { error: (error as Error).message, pairedItem: { item: i } } };

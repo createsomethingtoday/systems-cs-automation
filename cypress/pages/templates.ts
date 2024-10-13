@@ -5,7 +5,6 @@ export class TemplatesPage extends BasePage {
 
 	getters = {
 		useTemplateButton: () => cy.getByTestId('use-template-button'),
-		description: () => cy.getByTestId('template-description'),
 		templateCards: () => cy.getByTestId('template-card'),
 		firstTemplateCard: () => this.getters.templateCards().first(),
 		allCategoriesFilter: () => cy.getByTestId('template-filter-all-categories'),
@@ -15,30 +14,50 @@ export class TemplatesPage extends BasePage {
 		collectionCountLabel: () => cy.getByTestId('collection-count-label'),
 		templateCountLabel: () => cy.getByTestId('template-count-label'),
 		templatesLoadingContainer: () => cy.getByTestId('templates-loading-container'),
+		expandCategoriesButton: () => cy.getByTestId('expand-categories-button'),
 	};
 
 	actions = {
-		openOnboardingFlow: () => {
-			cy.intercept('POST', '/rest/workflows').as('createWorkflow');
-			cy.intercept('GET', 'rest/workflows/**').as('getWorkflow');
-
-			cy.visit('/workflows/onboarding/1');
-			cy.window().then((win) => {
-				win.preventNodeViewBeforeUnload = true;
-			});
-
-			cy.wait(['@getTemplate', '@createWorkflow', '@getWorkflow']);
+		openSingleTemplateView: (templateId: number) => {
+			cy.visit(`${this.url}/${templateId}`);
+			cy.waitForLoad();
 		},
 
-		importTemplate: () => {
+		openOnboardingFlow: (id: number, name: string, workflow: object, templatesHost: string) => {
+			const apiResponse = {
+				id,
+				name,
+				workflow,
+			};
+			cy.intercept('POST', '/rest/workflows').as('createWorkflow');
+			cy.intercept('GET', `${templatesHost}/api/workflows/templates/${id}`, {
+				statusCode: 200,
+				body: apiResponse,
+			}).as('getTemplate');
 			cy.intercept('GET', 'rest/workflows/**').as('getWorkflow');
 
-			cy.visit('/workflows/templates/1');
-			cy.window().then((win) => {
-				win.preventNodeViewBeforeUnload = true;
-			});
+			cy.visit(`/workflows/onboarding/${id}`);
 
-			cy.wait(['@getTemplate', '@getWorkflow']);
+			cy.wait('@getTemplate');
+			cy.wait(['@createWorkflow', '@getWorkflow']);
+		},
+
+		importTemplate: (id: number, name: string, workflow: object, templatesHost: string) => {
+			const apiResponse = {
+				id,
+				name,
+				workflow,
+			};
+			cy.intercept('GET', `${templatesHost}/api/workflows/templates/${id}`, {
+				statusCode: 200,
+				body: apiResponse,
+			}).as('getTemplate');
+			cy.intercept('GET', 'rest/workflows/**').as('getWorkflow');
+
+			cy.visit(`/workflows/templates/${id}`);
+
+			cy.wait('@getTemplate');
+			cy.wait('@getWorkflow');
 		},
 	};
 }

@@ -8,7 +8,7 @@ import type {
 	INodeTypeDescription,
 	JsonObject,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeApiError, NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 import moment from 'moment-timezone';
 import { v4 as uuid } from 'uuid';
@@ -34,15 +34,14 @@ export class GoogleCalendar implements INodeType {
 		name: 'googleCalendar',
 		icon: 'file:googleCalendar.svg',
 		group: ['input'],
-		version: [1, 1.1, 1.2],
+		version: [1, 1.1],
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Consume Google Calendar API',
 		defaults: {
 			name: 'Google Calendar',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
-		usableAsTool: true,
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'googleCalendarOAuth2Api',
@@ -89,10 +88,10 @@ export class GoogleCalendar implements INodeType {
 		loadOptions: {
 			// Get all the calendars to display them to user so that they can
 			// select them easily
-			async getConferenceSolutions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+			async getConferenceSolutations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const returnData: INodePropertyOptions[] = [];
-				const calendar = this.getCurrentNodeParameter('calendar', { extractValue: true }) as string;
-				const possibleSolutions: IDataObject = {
+				const calendar = this.getCurrentNodeParameter('calendar') as string;
+				const posibleSolutions: IDataObject = {
 					eventHangout: 'Google Hangout',
 					eventNamedHangout: 'Google Hangout Classic',
 					hangoutsMeet: 'Google Meet',
@@ -106,7 +105,7 @@ export class GoogleCalendar implements INodeType {
 				);
 				for (const solution of allowedConferenceSolutionTypes) {
 					returnData.push({
-						name: possibleSolutions[solution] as string,
+						name: posibleSolutions[solution] as string,
 						value: solution,
 					});
 				}
@@ -437,10 +436,6 @@ export class GoogleCalendar implements INodeType {
 						if (options.updatedMin) {
 							qs.updatedMin = addTimezoneToDate(options.updatedMin as string, tz || timezone);
 						}
-						if (options.fields) {
-							qs.fields = options.fields as string;
-						}
-
 						if (returnAll) {
 							responseData = await googleApiRequestAllItems.call(
 								this,
@@ -502,41 +497,9 @@ export class GoogleCalendar implements INodeType {
 								timeZone: updateTimezone,
 							};
 						}
-						// nodeVersion < 1.2
 						if (updateFields.attendees) {
 							body.attendees = [];
 							(updateFields.attendees as string[]).forEach((attendee) => {
-								body.attendees!.push.apply(
-									body.attendees,
-									attendee
-										.split(',')
-										.map((a) => a.trim())
-										.map((email) => ({ email })),
-								);
-							});
-						}
-						// nodeVersion >= 1.2
-						if (updateFields.attendeesUi) {
-							const { mode, attendees } = (
-								updateFields.attendeesUi as {
-									values: {
-										mode: string;
-										attendees: string[];
-									};
-								}
-							).values;
-							body.attendees = [];
-							if (mode === 'add') {
-								const event = await googleApiRequest.call(
-									this,
-									'GET',
-									`/calendar/v3/calendars/${calendarId}/events/${eventId}`,
-								);
-								((event?.attendees as IDataObject[]) || []).forEach((attendee) => {
-									body.attendees?.push(attendee);
-								});
-							}
-							(attendees as string[]).forEach((attendee) => {
 								body.attendees!.push.apply(
 									body.attendees,
 									attendee

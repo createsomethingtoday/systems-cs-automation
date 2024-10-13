@@ -1,3 +1,4 @@
+/* eslint-disable n8n-nodes-base/node-filename-against-convention */
 import type {
 	ICredentialDataDecryptedObject,
 	ICredentialsDecrypted,
@@ -10,7 +11,7 @@ import type {
 	INodeTypeBaseDescription,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import type mysql2 from 'mysql2/promise';
 
@@ -29,8 +30,8 @@ const versionDescription: INodeTypeDescription = {
 	defaults: {
 		name: 'MySQL',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
+	inputs: ['main'],
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'mySql',
@@ -327,7 +328,7 @@ export class MySqlV1 implements INodeType {
 							{ itemData: { item: index } },
 						);
 
-						collection = collection.concat(executionData);
+						collection.push(...executionData);
 
 						return collection;
 					},

@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { PushMessage } from '@n8n/api-types';
-
 import { STORES, TIME } from '@/constants';
+import { ref, computed } from 'vue';
 import { useSettingsStore } from './settings.store';
-import { useRootStore } from './root.store';
+import { useRootStore } from './n8nRoot.store';
+import type { IPushData } from '../Interface';
 
 export interface PushState {
 	pushRef: string;
@@ -18,7 +17,7 @@ export interface PushState {
 	isConnectionOpen: boolean;
 }
 
-export type OnPushMessageHandler = (event: PushMessage) => void;
+export type OnPushMessageHandler = (event: IPushData) => void;
 
 /**
  * Store for managing a push connection to the server
@@ -85,7 +84,7 @@ export const usePushConnectionStore = defineStore(STORES.PUSH, () => {
 
 		const useWebSockets = settingsStore.pushBackend === 'websocket';
 
-		const restUrl = rootStore.restUrl;
+		const { getRestUrl: restUrl } = rootStore;
 		const url = `/push?pushRef=${pushRef.value}`;
 
 		if (useWebSockets) {
@@ -117,7 +116,7 @@ export const usePushConnectionStore = defineStore(STORES.PUSH, () => {
 		isConnectionOpen.value = true;
 		connectRetries.value = 0;
 		lostConnection.value = false;
-		rootStore.setPushConnectionActive();
+		rootStore.pushConnectionActive = true;
 		pushSource.value?.removeEventListener('open', onConnectionSuccess);
 
 		if (outgoingQueue.value.length) {
@@ -140,7 +139,7 @@ export const usePushConnectionStore = defineStore(STORES.PUSH, () => {
 	 * Process a newly received message
 	 */
 	async function pushMessageReceived(event: Event) {
-		let receivedData: PushMessage;
+		let receivedData: IPushData;
 		try {
 			// @ts-ignore
 			receivedData = JSON.parse(event.data);
@@ -151,10 +150,6 @@ export const usePushConnectionStore = defineStore(STORES.PUSH, () => {
 		onMessageReceivedHandlers.value.forEach((handler) => handler(receivedData));
 	}
 
-	const clearQueue = () => {
-		outgoingQueue.value = [];
-	};
-
 	return {
 		pushRef,
 		pushSource,
@@ -164,6 +159,5 @@ export const usePushConnectionStore = defineStore(STORES.PUSH, () => {
 		pushConnect,
 		pushDisconnect,
 		send,
-		clearQueue,
 	};
 });

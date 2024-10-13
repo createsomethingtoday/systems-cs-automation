@@ -7,7 +7,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import { snakeCase } from 'change-case';
 import { validateJSON, zulipApiRequest } from './GenericFunctions';
 import { messageFields, messageOperations } from './MessageDescription';
@@ -29,8 +29,8 @@ export class Zulip implements INodeType {
 		defaults: {
 			name: 'Zulip',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'zulipApi',
@@ -167,7 +167,7 @@ export class Zulip implements INodeType {
 							body.content = updateFields.content as string;
 						}
 						if (updateFields.propagateMode) {
-							body.propagate_mode = snakeCase(updateFields.propagateMode as string);
+							body.propagat_mode = snakeCase(updateFields.propagateMode as string);
 						}
 						if (updateFields.topic) {
 							body.topic = updateFields.topic as string;

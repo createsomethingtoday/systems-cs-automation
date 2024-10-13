@@ -7,7 +7,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeApiError } from 'n8n-workflow';
+import { NodeApiError } from 'n8n-workflow';
 
 import { deriveUid, grafanaApiRequest, throwOnEmptyUpdate } from './GenericFunctions';
 
@@ -43,8 +43,8 @@ export class Grafana implements INodeType {
 		defaults: {
 			name: 'Grafana',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'grafanaApi',

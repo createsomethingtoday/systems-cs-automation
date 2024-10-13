@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { awsApiRequestREST, keysTPascalCase } from './GenericFunctions';
 
@@ -21,8 +20,8 @@ export class AwsRekognition implements INodeType {
 		defaults: {
 			name: 'AWS Rekognition',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'aws',

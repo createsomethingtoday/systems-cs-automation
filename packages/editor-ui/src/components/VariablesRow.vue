@@ -1,15 +1,14 @@
 <script lang="ts" setup>
-import type { ComponentPublicInstance } from 'vue';
+import type { ComponentPublicInstance, PropType } from 'vue';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import type { Rule, RuleGroup } from '@/Interface';
+import type { EnvironmentVariable, Rule, RuleGroup } from '@/Interface';
 import { useI18n } from '@/composables/useI18n';
 import { useToast } from '@/composables/useToast';
 import { useClipboard } from '@/composables/useClipboard';
 import { EnterpriseEditionFeature } from '@/constants';
 import { useSettingsStore } from '@/stores/settings.store';
 import { useUsersStore } from '@/stores/users.store';
-import { getResourcePermissions } from '@/permissions';
-import type { IResource } from './layouts/ResourcesListLayout.vue';
+import { getVariablesPermissions } from '@/permissions';
 
 const i18n = useI18n();
 const clipboard = useClipboard();
@@ -17,43 +16,37 @@ const { showMessage } = useToast();
 const settingsStore = useSettingsStore();
 const usersStore = useUsersStore();
 
-const emit = defineEmits<{
-	save: [data: IResource];
-	cancel: [data: IResource];
-	edit: [data: IResource];
-	delete: [data: IResource];
-}>();
+const emit = defineEmits(['save', 'cancel', 'edit', 'delete']);
 
-const props = withDefaults(
-	defineProps<{
-		data: IResource;
-		editing: boolean;
-	}>(),
-	{
-		editing: false,
+const props = defineProps({
+	data: {
+		type: Object as PropType<EnvironmentVariable>,
+		default: () => ({}),
 	},
-);
+	editing: {
+		type: Boolean,
+		default: false,
+	},
+});
 
-const permissions = computed(
-	() => getResourcePermissions(usersStore.currentUser?.globalScopes).variable,
-);
-const modelValue = ref<IResource>({ ...props.data });
+const permissions = computed(() => getVariablesPermissions(usersStore.currentUser));
+const modelValue = ref<EnvironmentVariable>({ ...props.data });
 
 const formValidationStatus = ref<Record<string, boolean>>({
 	key: false,
 	value: false,
 });
 const formValid = computed(() => {
-	return formValidationStatus.value.name && formValidationStatus.value.value;
+	return formValidationStatus.value.key && formValidationStatus.value.value;
 });
 
 const keyInputRef = ref<ComponentPublicInstance & { inputRef?: HTMLElement }>();
 const valueInputRef = ref<HTMLElement>();
 
-const usage = ref(`$vars.${props.data.name}`);
+const usage = ref(`$vars.${props.data.key}`);
 
-const isFeatureEnabled = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Variables],
+const isFeatureEnabled = computed(() =>
+	settingsStore.isEnterpriseFeatureEnabled(EnterpriseEditionFeature.Variables),
 );
 
 onMounted(() => {
@@ -84,17 +77,17 @@ const valueValidationRules: Array<Rule | RuleGroup> = [
 ];
 
 watch(
-	() => modelValue.value.name,
+	() => modelValue.value.key,
 	async () => {
 		await nextTick();
-		if (formValidationStatus.value.name) {
+		if (formValidationStatus.value.key) {
 			updateUsageSyntax();
 		}
 	},
 );
 
 function updateUsageSyntax() {
-	usage.value = `$vars.${modelValue.value.name || props.data.name}`;
+	usage.value = `$vars.${modelValue.value.key || props.data.key}`;
 }
 
 async function onCancel() {
@@ -118,8 +111,8 @@ async function onDelete() {
 	emit('delete', modelValue.value);
 }
 
-function onValidate(name: string, value: boolean) {
-	formValidationStatus.value[name] = value;
+function onValidate(key: string, value: boolean) {
+	formValidationStatus.value[key] = value;
 }
 
 function onUsageClick() {
@@ -139,19 +132,19 @@ function focusFirstInput() {
 	<tr :class="$style.variablesRow" data-test-id="variables-row">
 		<td class="variables-key-column">
 			<div>
-				<span v-if="!editing">{{ data.name }}</span>
+				<span v-if="!editing">{{ data.key }}</span>
 				<n8n-form-input
 					v-else
 					ref="keyInputRef"
-					v-model="modelValue.name"
+					v-model="modelValue.key"
 					label
-					name="name"
+					name="key"
 					data-test-id="variable-row-key-input"
 					:placeholder="i18n.baseText('variables.editing.key.placeholder')"
 					required
 					validate-on-blur
 					:validation-rules="keyValidationRules"
-					@validate="(value: boolean) => onValidate('name', value)"
+					@validate="(value) => onValidate('key', value)"
 				/>
 			</div>
 		</td>
@@ -168,14 +161,14 @@ function focusFirstInput() {
 					:placeholder="i18n.baseText('variables.editing.value.placeholder')"
 					validate-on-blur
 					:validation-rules="valueValidationRules"
-					@validate="(value: boolean) => onValidate('value', value)"
+					@validate="(value) => onValidate('value', value)"
 				/>
 			</div>
 		</td>
 		<td class="variables-usage-column">
 			<div>
 				<n8n-tooltip placement="top">
-					<span v-if="modelValue.name && usage" :class="$style.usageSyntax" @click="onUsageClick">{{
+					<span v-if="modelValue.key && usage" :class="$style.usageSyntax" @click="onUsageClick">{{
 						usage
 					}}</span>
 					<template #content>

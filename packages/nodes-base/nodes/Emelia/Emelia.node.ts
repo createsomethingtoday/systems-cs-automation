@@ -1,11 +1,10 @@
-import {
-	type IExecuteFunctions,
-	type IDataObject,
-	type ILoadOptionsFunctions,
-	type INodeExecutionData,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import isEmpty from 'lodash/isEmpty';
@@ -27,8 +26,8 @@ export class Emelia implements INodeType {
 		defaults: {
 			name: 'Emelia',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'emeliaApi',

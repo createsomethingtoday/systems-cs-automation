@@ -5,7 +5,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import moment from 'moment-timezone';
 import { nasaApiRequest, nasaApiRequestAllItems } from './GenericFunctions';
@@ -23,8 +23,8 @@ export class Nasa implements INodeType {
 		defaults: {
 			name: 'NASA',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'nasaApi',
@@ -1069,7 +1069,7 @@ export class Nasa implements INodeType {
 				if (resource === 'astronomyPictureOfTheDay') {
 					download = this.getNodeParameter('download', 0);
 
-					if (download && responseData?.media_type === 'image') {
+					if (download) {
 						const binaryProperty = this.getNodeParameter('binaryPropertyName', i);
 
 						const data = await nasaApiRequest.call(
@@ -1130,12 +1130,7 @@ export class Nasa implements INodeType {
 
 		if (resource === 'earthImagery' && operation === 'get') {
 			return [items];
-		} else if (
-			resource === 'astronomyPictureOfTheDay' &&
-			operation === 'get' &&
-			download &&
-			responseData?.media_type === 'image'
-		) {
+		} else if (resource === 'astronomyPictureOfTheDay' && operation === 'get' && download) {
 			return [items];
 		} else {
 			return [returnData];

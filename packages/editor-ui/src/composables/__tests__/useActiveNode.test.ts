@@ -1,12 +1,13 @@
-import { computed } from 'vue';
 import { describe, it, expect, vi } from 'vitest';
-import { mock } from 'vitest-mock-extended';
-
 import { useActiveNode } from '@/composables/useActiveNode';
 import { useNodeType } from '@/composables/useNodeType';
+import { createTestNode } from '@/__tests__/mocks';
+import { MANUAL_TRIGGER_NODE_TYPE } from '@/constants';
+import { computed } from 'vue';
+import { defaultMockNodeTypes } from '@/__tests__/defaults';
 
-const node = computed(() => mock());
-const nodeType = computed(() => mock());
+const node = computed(() => createTestNode({ name: 'Node', type: MANUAL_TRIGGER_NODE_TYPE }));
+const nodeType = computed(() => defaultMockNodeTypes[MANUAL_TRIGGER_NODE_TYPE]);
 
 vi.mock('@/stores/ndv.store', () => ({
 	useNDVStore: vi.fn(() => ({

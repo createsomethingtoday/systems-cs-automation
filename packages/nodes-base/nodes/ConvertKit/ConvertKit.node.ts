@@ -1,12 +1,11 @@
-import {
-	type IExecuteFunctions,
-	type ILoadOptionsFunctions,
-	type IDataObject,
-	type INodeExecutionData,
-	type INodePropertyOptions,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	IDataObject,
+	INodeExecutionData,
+	INodePropertyOptions,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import { convertKitApiRequest } from './GenericFunctions';
@@ -33,8 +32,8 @@ export class ConvertKit implements INodeType {
 		defaults: {
 			name: 'ConvertKit',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'convertKitApi',

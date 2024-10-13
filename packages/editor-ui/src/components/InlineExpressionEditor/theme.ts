@@ -1,24 +1,24 @@
 import { EditorView } from '@codemirror/view';
 import { highlighter } from '@/plugins/codemirror/resolvableHighlighter';
 
-const commonThemeProps = (isReadOnly = false) => ({
+const commonThemeProps = {
 	'&.cm-focused': {
 		outline: '0 !important',
 	},
 	'.cm-content': {
 		fontFamily: 'var(--font-family-monospace)',
 		color: 'var(--input-font-color, var(--color-text-dark))',
-		caretColor: isReadOnly ? 'transparent' : 'var(--color-code-caret)',
+		caretColor: 'var(--color-code-caret)',
 	},
 	'.cm-line': {
 		padding: '0',
 	},
-});
+};
 
-export const inputTheme = ({ rows, isReadOnly } = { rows: 5, isReadOnly: false }) => {
+export const inputTheme = ({ rows } = { rows: 5 }) => {
 	const maxHeight = Math.max(rows * 22 + 8);
 	const theme = EditorView.theme({
-		...commonThemeProps(isReadOnly),
+		...commonThemeProps,
 		'&': {
 			maxHeight: `${maxHeight}px`,
 			minHeight: '30px',
@@ -41,9 +41,6 @@ export const inputTheme = ({ rows, isReadOnly } = { rows: 5, isReadOnly: false }
 				'var(--input-border-bottom-right-radius, var(--input-border-radius, var(--border-radius-base)))',
 			backgroundColor: 'white',
 		},
-		'.cm-cursor, .cm-dropCursor': {
-			borderLeftColor: 'var(--color-code-caret)',
-		},
 		'.cm-scroller': {
 			lineHeight: '1.68',
 		},
@@ -57,7 +54,7 @@ export const inputTheme = ({ rows, isReadOnly } = { rows: 5, isReadOnly: false }
 
 export const outputTheme = () => {
 	const theme = EditorView.theme({
-		...commonThemeProps(true),
+		...commonThemeProps,
 		'&': {
 			maxHeight: '95px',
 			width: '100%',

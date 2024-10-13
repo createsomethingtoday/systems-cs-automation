@@ -1,19 +1,18 @@
-import { Container } from 'typedi';
 import validator from 'validator';
 
 import config from '@/config';
-import type { User } from '@/databases/entities/user';
-import { UserRepository } from '@/databases/repositories/user.repository';
-
-import { createUserShell } from './shared/db/users';
+import type { User } from '@db/entities/User';
 import {
 	randomEmail,
 	randomInvalidPassword,
 	randomName,
 	randomValidPassword,
 } from './shared/random';
-import * as testDb from './shared/test-db';
+import * as testDb from './shared/testDb';
 import * as utils from './shared/utils/';
+import { createUserShell } from './shared/db/users';
+import { UserRepository } from '@db/repositories/user.repository';
+import Container from 'typedi';
 
 const testServer = utils.setupTestServer({ endpointGroups: ['owner'] });
 

@@ -7,12 +7,12 @@ import type {
 	IDataObject,
 	INodeProperties,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import get from 'lodash/get';
 import { placeholder } from './placeholder';
 import { getValue } from './utils';
 import type { IValueData } from './types';
-import { getResolvables, sanitizeDataPathKey } from '@utils/utilities';
+import { getResolvables, sanitazeDataPathKey } from '@utils/utilities';
 
 export const capitalizeHeader = (header: string, capitalize?: boolean) => {
 	if (!capitalize) return header;
@@ -125,7 +125,7 @@ export class Html implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'HTML',
 		name: 'html',
-		icon: { light: 'file:html.svg', dark: 'file:html.dark.svg' },
+		icon: 'file:html.svg',
 		group: ['transform'],
 		version: [1, 1.1, 1.2],
 		subtitle: '={{ $parameter["operation"] }}',
@@ -133,8 +133,8 @@ export class Html implements INodeType {
 		defaults: {
 			name: 'HTML',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		parameterPane: 'wide',
 		properties: [
 			{
@@ -274,7 +274,7 @@ export class Html implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					show: {
@@ -296,7 +296,7 @@ export class Html implements INodeType {
 						type: 'boolean',
 						default: true,
 						description:
-							'Whether to remove leading and trailing whitespaces, line breaks (newlines) and condense multiple consecutive whitespaces into a single space',
+							'Whether to remove remove leading and trailing whitespaces, line breaks (newlines) and condense multiple consecutive whitespaces into a single space',
 					},
 				],
 			},
@@ -307,7 +307,7 @@ export class Html implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					show: {
@@ -516,7 +516,7 @@ export class Html implements INodeType {
 					let htmlArray: string[] | string = [];
 					if (sourceData === 'json') {
 						if (nodeVersion === 1) {
-							const key = sanitizeDataPathKey(item.json, dataPropertyName);
+							const key = sanitazeDataPathKey(item.json, dataPropertyName);
 							if (item.json[key] === undefined) {
 								throw new NodeOperationError(
 									this.getNode(),

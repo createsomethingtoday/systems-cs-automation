@@ -6,7 +6,7 @@ import type {
 	INodeTypeDescription,
 	IHttpRequestMethods,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import { disqusApiRequest, disqusApiRequestAllItems } from './GenericFunctions';
 
@@ -23,8 +23,8 @@ export class Disqus implements INodeType {
 		defaults: {
 			name: 'Disqus',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'disqusApi',

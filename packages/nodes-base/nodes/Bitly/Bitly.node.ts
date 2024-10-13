@@ -7,7 +7,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { linkFields, linkOperations } from './LinkDescription';
 
@@ -25,8 +24,8 @@ export class Bitly implements INodeType {
 		defaults: {
 			name: 'Bitly',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'bitlyApi',

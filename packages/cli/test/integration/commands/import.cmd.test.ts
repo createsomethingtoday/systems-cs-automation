@@ -1,20 +1,36 @@
-import { nanoid } from 'nanoid';
+import { Config } from '@oclif/core';
 
+import { InternalHooks } from '@/InternalHooks';
 import { ImportWorkflowsCommand } from '@/commands/import/workflow';
-import { LoadNodesAndCredentials } from '@/load-nodes-and-credentials';
-import { setupTestCommand } from '@test-integration/utils/test-command';
+import { LoadNodesAndCredentials } from '@/LoadNodesAndCredentials';
 
 import { mockInstance } from '../../shared/mocking';
-import { getPersonalProject } from '../shared/db/projects';
-import { createMember, createOwner } from '../shared/db/users';
+import * as testDb from '../shared/testDb';
 import { getAllSharedWorkflows, getAllWorkflows } from '../shared/db/workflows';
-import * as testDb from '../shared/test-db';
+import { createMember, createOwner } from '../shared/db/users';
+import { getPersonalProject } from '../shared/db/projects';
+import { nanoid } from 'nanoid';
 
-mockInstance(LoadNodesAndCredentials);
-const command = setupTestCommand(ImportWorkflowsCommand);
+const oclifConfig = new Config({ root: __dirname });
+
+async function importWorkflow(argv: string[]) {
+	const importer = new ImportWorkflowsCommand(argv, oclifConfig);
+	await importer.init();
+	await importer.run();
+}
+
+beforeAll(async () => {
+	mockInstance(InternalHooks);
+	mockInstance(LoadNodesAndCredentials);
+	await testDb.init();
+});
 
 beforeEach(async () => {
 	await testDb.truncate(['Workflow', 'SharedWorkflow', 'User']);
+});
+
+afterAll(async () => {
+	await testDb.terminate();
 });
 
 test('import:workflow should import active workflow and deactivate it', async () => {
@@ -27,9 +43,9 @@ test('import:workflow should import active workflow and deactivate it', async ()
 	//
 	// ACT
 	//
-	await command.run([
+	await importWorkflow([
 		'--separate',
-		'--input=./test/integration/commands/import-workflows/separate',
+		'--input=./test/integration/commands/importWorkflows/separate',
 	]);
 
 	//
@@ -69,8 +85,8 @@ test('import:workflow should import active workflow from combined file and deact
 	//
 	// ACT
 	//
-	await command.run([
-		'--input=./test/integration/commands/import-workflows/combined/combined.json',
+	await importWorkflow([
+		'--input=./test/integration/commands/importWorkflows/combined/combined.json',
 	]);
 
 	//
@@ -109,8 +125,8 @@ test('`import:workflow --userId ...` should fail if the workflow exists already 
 	const member = await createMember();
 
 	// Import workflow the first time, assigning it to a member.
-	await command.run([
-		'--input=./test/integration/commands/import-workflows/combined-with-update/original.json',
+	await importWorkflow([
+		'--input=./test/integration/commands/importWorkflows/combined-with-update/original.json',
 		`--userId=${owner.id}`,
 	]);
 
@@ -136,8 +152,8 @@ test('`import:workflow --userId ...` should fail if the workflow exists already 
 	// Import the same workflow again, with another name but the same ID, and try
 	// to assign it to the member.
 	await expect(
-		command.run([
-			'--input=./test/integration/commands/import-workflows/combined-with-update/updated.json',
+		importWorkflow([
+			'--input=./test/integration/commands/importWorkflows/combined-with-update/updated.json',
 			`--userId=${member.id}`,
 		]),
 	).rejects.toThrowError(
@@ -173,8 +189,8 @@ test("only update the workflow, don't create or update the owner if `--userId` i
 	const memberProject = await getPersonalProject(member);
 
 	// Import workflow the first time, assigning it to a member.
-	await command.run([
-		'--input=./test/integration/commands/import-workflows/combined-with-update/original.json',
+	await importWorkflow([
+		'--input=./test/integration/commands/importWorkflows/combined-with-update/original.json',
 		`--userId=${member.id}`,
 	]);
 
@@ -198,8 +214,8 @@ test("only update the workflow, don't create or update the owner if `--userId` i
 	// ACT
 	//
 	// Import the same workflow again, with another name but the same ID.
-	await command.run([
-		'--input=./test/integration/commands/import-workflows/combined-with-update/updated.json',
+	await importWorkflow([
+		'--input=./test/integration/commands/importWorkflows/combined-with-update/updated.json',
 	]);
 
 	//
@@ -232,8 +248,8 @@ test('`import:workflow --projectId ...` should fail if the credential already ex
 	const memberProject = await getPersonalProject(member);
 
 	// Import workflow the first time, assigning it to a member.
-	await command.run([
-		'--input=./test/integration/commands/import-workflows/combined-with-update/original.json',
+	await importWorkflow([
+		'--input=./test/integration/commands/importWorkflows/combined-with-update/original.json',
 		`--userId=${owner.id}`,
 	]);
 
@@ -259,8 +275,8 @@ test('`import:workflow --projectId ...` should fail if the credential already ex
 	// Import the same workflow again, with another name but the same ID, and try
 	// to assign it to the member.
 	await expect(
-		command.run([
-			'--input=./test/integration/commands/import-workflows/combined-with-update/updated.json',
+		importWorkflow([
+			'--input=./test/integration/commands/importWorkflows/combined-with-update/updated.json',
 			`--projectId=${memberProject.id}`,
 		]),
 	).rejects.toThrowError(
@@ -289,8 +305,8 @@ test('`import:workflow --projectId ...` should fail if the credential already ex
 
 test('`import:workflow --projectId ... --userId ...` fails explaining that only one of the options can be used at a time', async () => {
 	await expect(
-		command.run([
-			'--input=./test/integration/commands/import-workflows/combined-with-update/updated.json',
+		importWorkflow([
+			'--input=./test/integration/commands/importWorkflows/combined-with-update/updated.json',
 			`--userId=${nanoid()}`,
 			`--projectId=${nanoid()}`,
 		]),

@@ -1,5 +1,4 @@
 import type { INodeType, INodeTypeDescription } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 import { oldVersionNotice } from '../../utils/descriptions';
 import { imageFields, imageOperations } from './ImageDescription';
 import { textFields, textOperations } from './TextDescription';
@@ -10,7 +9,7 @@ export class OpenAi implements INodeType {
 		displayName: 'OpenAI',
 		name: 'openAi',
 		hidden: true,
-		icon: { light: 'file:openAi.svg', dark: 'file:openAi.dark.svg' },
+		icon: 'file:openAi.svg',
 		group: ['transform'],
 		version: [1, 1.1],
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -18,8 +17,8 @@ export class OpenAi implements INodeType {
 		defaults: {
 			name: 'OpenAI',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'openAiApi',

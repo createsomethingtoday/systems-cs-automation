@@ -1,3 +1,4 @@
+/* eslint-disable n8n-nodes-base/node-filename-against-convention */
 import type {
 	IDataObject,
 	IExecuteFunctions,
@@ -6,7 +7,6 @@ import type {
 	INodeTypeBaseDescription,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import type { IncludeMods, SetField, SetNodeOptions } from './helpers/interfaces';
 import { INCLUDE } from './helpers/interfaces';
@@ -19,16 +19,17 @@ type Mode = 'manual' | 'raw';
 const versionDescription: INodeTypeDescription = {
 	displayName: 'Edit Fields (Set)',
 	name: 'set',
-	iconColor: 'blue',
+	icon: 'fa:pen',
 	group: ['input'],
-	version: [3, 3.1, 3.2, 3.3, 3.4],
+	version: [3, 3.1, 3.2, 3.3],
 	description: 'Modify, add, or remove item fields',
 	subtitle: '={{$parameter["mode"]}}',
 	defaults: {
 		name: 'Edit Fields',
+		color: '#0000FF',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
+	inputs: ['main'],
+	outputs: ['main'],
 	properties: [
 		{
 			displayName: 'Mode',
@@ -200,7 +201,7 @@ const versionDescription: INodeTypeDescription = {
 			displayName: 'Options',
 			name: 'options',
 			type: 'collection',
-			placeholder: 'Add option',
+			placeholder: 'Add Option',
 			default: {},
 			options: [
 				{
@@ -208,26 +209,7 @@ const versionDescription: INodeTypeDescription = {
 					name: 'includeBinary',
 					type: 'boolean',
 					default: true,
-					displayOptions: {
-						hide: {
-							'@version': [{ _cnd: { gte: 3.4 } }],
-						},
-					},
 					description: 'Whether binary data should be included if present in the input item',
-				},
-				{
-					displayName: 'Strip Binary Data',
-					name: 'stripBinary',
-					type: 'boolean',
-					default: true,
-					description:
-						'Whether binary data should be stripped from the input item. Only applies when "Include Other Input Fields" is enabled.',
-					displayOptions: {
-						show: {
-							'@version': [{ _cnd: { gte: 3.4 } }],
-							'/includeOtherFields': [true],
-						},
-					},
 				},
 				{
 					displayName: 'Ignore Type Conversion Errors',

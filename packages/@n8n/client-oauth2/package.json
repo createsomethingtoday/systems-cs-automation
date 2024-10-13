@@ -1,13 +1,12 @@
 {
   "name": "@n8n/client-oauth2",
-  "version": "0.21.0",
+  "version": "0.15.0",
   "scripts": {
     "clean": "rimraf dist .turbo",
     "dev": "pnpm watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "build": "tsc -p tsconfig.build.json",
-    "format": "biome format --write src test",
-    "format:check": "biome ci src test",
+    "format": "prettier --write . --ignore-path ../../../.prettierignore",
     "lint": "eslint . --quiet",
     "lintfix": "eslint . --fix",
     "watch": "tsc -p tsconfig.build.json --watch",
@@ -21,6 +20,6 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "axios": "catalog:"
+    "axios": "1.6.7"
   }
 }

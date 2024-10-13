@@ -1,9 +1,7 @@
-import isObject from 'lodash/isObject';
 import { DateTime } from 'luxon';
-
-import { ApplicationError } from './errors';
 import type { FieldType, INodePropertyOptions, ValidationResult } from './Interfaces';
-import { jsonParse } from './utils';
+import isObject from 'lodash/isObject';
+import { ApplicationError } from './errors';
 
 export const tryToParseNumber = (value: unknown): number => {
 	const isValidNumber = !isNaN(Number(value));
@@ -137,8 +135,7 @@ export const tryToParseObject = (value: unknown): object => {
 		return value;
 	}
 	try {
-		const o = jsonParse<object>(String(value), { acceptJSObject: true });
-
+		const o = JSON.parse(String(value)) as object;
 		if (typeof o !== 'object' || Array.isArray(o)) {
 			throw new ApplicationError('Value is not a valid object', { extra: { value } });
 		}
@@ -146,16 +143,6 @@ export const tryToParseObject = (value: unknown): object => {
 	} catch (e) {
 		throw new ApplicationError('Value is not a valid object', { extra: { value } });
 	}
-};
-
-export const getValueDescription = <T>(value: T): string => {
-	if (typeof value === 'object') {
-		if (value === null) return "'null'";
-		if (Array.isArray(value)) return 'array';
-		return 'object';
-	}
-
-	return `'${String(value)}'`;
 };
 
 export const tryToParseUrl = (value: unknown): string => {
@@ -209,8 +196,7 @@ export function validateFieldType(
 	const strict = options.strict ?? false;
 	const valueOptions = options.valueOptions ?? [];
 	const parseStrings = options.parseStrings ?? false;
-
-	const defaultErrorMessage = `'${fieldName}' expects a ${type} but we got ${getValueDescription(value)}`;
+	const defaultErrorMessage = `'${fieldName}' expects a ${type} but we got '${String(value)}'`;
 	switch (type.toLowerCase()) {
 		case 'string': {
 			if (!parseStrings) return { valid: true, newValue: value };
@@ -270,7 +256,7 @@ export function validateFieldType(
 			} catch (e) {
 				return {
 					valid: false,
-					errorMessage: `'${fieldName}' expects time (hh:mm:(:ss)) but we got ${getValueDescription(value)}.`,
+					errorMessage: `'${fieldName}' expects time (hh:mm:(:ss)) but we got '${String(value)}'.`,
 				};
 			}
 		}
@@ -301,9 +287,9 @@ export function validateFieldType(
 			if (!isValidOption) {
 				return {
 					valid: false,
-					errorMessage: `'${fieldName}' expects one of the following values: [${validOptions}] but we got ${getValueDescription(
+					errorMessage: `'${fieldName}' expects one of the following values: [${validOptions}] but we got '${String(
 						value,
-					)}`,
+					)}'`,
 				};
 			}
 			return { valid: true, newValue: value };

@@ -5,10 +5,9 @@ import type {
 	INodePropertyOptions,
 	INodeTypeDescription,
 	INodeTypeNameVersion,
-	NodeParameterValueType,
-	ResourceMapperFields,
 } from 'n8n-workflow';
 import axios from 'axios';
+import type { ResourceMapperFields } from 'n8n-workflow/src/Interfaces';
 
 export async function getNodeTypes(baseUrl: string) {
 	const { data } = await axios.get(baseUrl + 'types/nodes.json', { withCredentials: true });
@@ -55,18 +54,6 @@ export async function getResourceMapperFields(
 		context,
 		'POST',
 		'/dynamic-node-parameters/resource-mapper-fields',
-		sendData,
-	);
-}
-
-export async function getNodeParameterActionResult(
-	context: IRestApiContext,
-	sendData: DynamicNodeParameters.ActionResultRequest,
-): Promise<NodeParameterValueType> {
-	return await makeRestApiRequest(
-		context,
-		'POST',
-		'/dynamic-node-parameters/action-result',
 		sendData,
 	);
 }

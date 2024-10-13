@@ -1,9 +1,7 @@
-import { Flags } from '@oclif/core';
 import Container from 'typedi';
-
-import { AuthUserRepository } from '@/databases/repositories/auth-user.repository';
-
-import { BaseCommand } from '../base-command';
+import { Flags } from '@oclif/core';
+import { UserRepository } from '@db/repositories/user.repository';
+import { BaseCommand } from '../BaseCommand';
 
 export class DisableMFACommand extends BaseCommand {
 	static description = 'Disable MFA authentication for a user';
@@ -29,8 +27,7 @@ export class DisableMFACommand extends BaseCommand {
 			return;
 		}
 
-		const repository = Container.get(AuthUserRepository);
-		const user = await repository.findOneBy({ email: flags.email });
+		const user = await Container.get(UserRepository).findOneBy({ email: flags.email });
 
 		if (!user) {
 			this.reportUserDoesNotExistError(flags.email);
@@ -49,7 +46,7 @@ export class DisableMFACommand extends BaseCommand {
 
 		Object.assign(user, { mfaSecret: null, mfaRecoveryCodes: [], mfaEnabled: false });
 
-		await repository.save(user);
+		await Container.get(UserRepository).save(user);
 
 		this.reportSuccess(flags.email);
 	}

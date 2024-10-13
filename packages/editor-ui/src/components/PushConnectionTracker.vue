@@ -1,22 +1,9 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { mapStores } from 'pinia';
-import { useRootStore } from '@/stores/root.store';
-
-export default defineComponent({
-	name: 'PushConnectionTracker',
-	computed: {
-		...mapStores(useRootStore),
-	},
-});
-</script>
-
 <template>
 	<span>
 		<div v-if="!rootStore.pushConnectionActive" class="push-connection-lost primary-color">
 			<n8n-tooltip placement="bottom-end">
 				<template #content>
-					<div v-n8n-html="$locale.baseText('pushConnectionTracker.cannotConnectToServer')"></div>
+					<div v-html="$locale.baseText('pushConnectionTracker.cannotConnectToServer')"></div>
 				</template>
 				<span>
 					<font-awesome-icon icon="exclamation-triangle" />&nbsp;
@@ -27,3 +14,16 @@ export default defineComponent({
 		<slot v-else />
 	</span>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { mapStores } from 'pinia';
+import { useRootStore } from '@/stores/n8nRoot.store';
+
+export default defineComponent({
+	name: 'PushConnectionTracker',
+	computed: {
+		...mapStores(useRootStore),
+	},
+});
+</script>

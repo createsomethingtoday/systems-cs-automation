@@ -54,7 +54,7 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 		section: RECOMMENDED_SECTION,
 		info: createInfoBoxRenderer({
 			name: '$json',
-			returnType: 'Object',
+			returnType: 'object',
 			description: i18n.baseText('codeNodeEditor.completer.json'),
 			docURL: 'https://docs.n8n.io/data/data-structure/',
 		}),
@@ -64,7 +64,7 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 		section: RECOMMENDED_SECTION,
 		info: createInfoBoxRenderer({
 			name: '$binary',
-			returnType: 'Object',
+			returnType: 'object',
 			description: i18n.baseText('codeNodeEditor.completer.binary'),
 		}),
 	},
@@ -170,7 +170,7 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 		section: METADATA_SECTION,
 		info: createInfoBoxRenderer({
 			name: '$input',
-			returnType: 'Object',
+			returnType: 'object',
 			description: i18n.baseText('codeNodeEditor.completer.$input'),
 		}),
 	},
@@ -179,7 +179,7 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 		section: METADATA_SECTION,
 		info: createInfoBoxRenderer({
 			name: '$parameter',
-			returnType: 'Object',
+			returnType: 'object',
 			description: i18n.baseText('codeNodeEditor.completer.$parameter'),
 		}),
 	},
@@ -215,7 +215,7 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 		section: METADATA_SECTION,
 		info: createInfoBoxRenderer({
 			name: '$vars',
-			returnType: 'Object',
+			returnType: 'object',
 			description: i18n.baseText('codeNodeEditor.completer.$vars'),
 		}),
 	},
@@ -270,58 +270,6 @@ export const ROOT_DOLLAR_COMPLETIONS: Completion[] = [
 							'data = {\n  "reservations": [\n    {\n      "id": 1,\n      "guests": [\n        {\n          "name": "Nathan",\n          "requirements": {\n            "room": "double",\n            "meal": "vegetarian"\n          }\n        },\n        {\n          "name": "Meg",\n          "requirements": {\n            "room": "single"\n          }\n        }\n      ]\n    },\n    {\n      "id": 2,\n      "guests": [\n        {\n          "name": "Lex",\n          "requirements": {\n            "room": "double"\n          }\n        }\n      ]\n    }\n  ]\n}\n\n$jmespath(data, "reservations[].guests[?requirements.room==\'double\'][].name")',
 						evaluated: "['Nathan', 'Lex']",
 						description: i18n.baseText('codeNodeEditor.completer.$jmespath.examples.4'),
-					},
-				],
-			},
-			true,
-		),
-	},
-	{
-		label: '$fromAI()',
-		section: METHODS_SECTION,
-		info: createInfoBoxRenderer(
-			{
-				name: '$fromAI',
-				returnType: 'any',
-				description: 'Populate this with the parameter passed from the large language model',
-				args: [
-					{
-						name: 'key',
-						description:
-							'The key or name of the argument, must be between 1 and 64 characters long and only contain lowercase letters, uppercase letters, numbers, underscores, and hyphens',
-						type: 'string',
-					},
-					{
-						name: 'description',
-						description: 'Description of the argument',
-						type: 'string',
-						optional: true,
-					},
-					{
-						name: 'type',
-						description: 'Type of the argument',
-						type: 'string | number | boolean | json',
-						optional: true,
-					},
-					{
-						name: 'defaultValue',
-						description: 'Default value for the argument',
-						type: 'any',
-						optional: true,
-					},
-				],
-				examples: [
-					{
-						example: '$fromAI("name")',
-						description: 'Get the name of the person',
-					},
-					{
-						example: '$fromAI("age", "The age of the person", "number", 18)',
-						description: 'Get the age of the person as number with default value 18',
-					},
-					{
-						example: '$fromAI("isStudent", "Is the person a student", "boolean", false)',
-						description: 'Get the student status of the person as boolean with default value false',
 					},
 				],
 			},

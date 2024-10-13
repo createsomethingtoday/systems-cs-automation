@@ -5,7 +5,7 @@ export class QRadarApi implements ICredentialType {
 
 	displayName = 'QRadar API';
 
-	icon = { light: 'file:icons/IBM.svg', dark: 'file:icons/IBM.dark.svg' } as const;
+	icon = 'file:icons/IBM.svg';
 
 	documentationUrl = 'qradar';
 

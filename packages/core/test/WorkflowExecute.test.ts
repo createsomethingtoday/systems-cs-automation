@@ -5,7 +5,6 @@ import {
 	NodeExecutionOutput,
 	Workflow,
 } from 'n8n-workflow';
-
 import { WorkflowExecute } from '@/WorkflowExecute';
 
 import * as Helpers from './helpers';
@@ -31,7 +30,7 @@ describe('WorkflowExecute', () => {
 					},
 				});
 
-				const waitPromise = createDeferredPromise<IRun>();
+				const waitPromise = await createDeferredPromise<IRun>();
 				const nodeExecutionOrder: string[] = [];
 				const additionalData = Helpers.WorkflowExecuteAdditionalData(
 					waitPromise,
@@ -42,7 +41,7 @@ describe('WorkflowExecute', () => {
 
 				const executionData = await workflowExecute.run(workflowInstance);
 
-				const result = await waitPromise.promise;
+				const result = await waitPromise.promise();
 
 				// Check if the data from WorkflowExecute is identical to data received
 				// by the webhooks
@@ -94,7 +93,7 @@ describe('WorkflowExecute', () => {
 					},
 				});
 
-				const waitPromise = createDeferredPromise<IRun>();
+				const waitPromise = await createDeferredPromise<IRun>();
 				const nodeExecutionOrder: string[] = [];
 				const additionalData = Helpers.WorkflowExecuteAdditionalData(
 					waitPromise,
@@ -105,7 +104,7 @@ describe('WorkflowExecute', () => {
 
 				const executionData = await workflowExecute.run(workflowInstance);
 
-				const result = await waitPromise.promise;
+				const result = await waitPromise.promise();
 
 				// Check if the data from WorkflowExecute is identical to data received
 				// by the webhooks
@@ -121,10 +120,7 @@ describe('WorkflowExecute', () => {
 						if (nodeData.data === undefined) {
 							return null;
 						}
-						const toMap = testData.output.testAllOutputs
-							? nodeData.data.main
-							: [nodeData.data.main[0]!];
-						return toMap.map((data) => data!.map((entry) => entry.json));
+						return nodeData.data.main[0]!.map((entry) => entry.json);
 					});
 
 					// expect(resultData).toEqual(testData.output.nodeData[nodeName]);
@@ -161,7 +157,7 @@ describe('WorkflowExecute', () => {
 					settings: testData.input.workflowData.settings,
 				});
 
-				const waitPromise = createDeferredPromise<IRun>();
+				const waitPromise = await createDeferredPromise<IRun>();
 				const nodeExecutionOrder: string[] = [];
 				const additionalData = Helpers.WorkflowExecuteAdditionalData(
 					waitPromise,
@@ -172,7 +168,7 @@ describe('WorkflowExecute', () => {
 
 				const executionData = await workflowExecute.run(workflowInstance);
 
-				const result = await waitPromise.promise;
+				const result = await waitPromise.promise();
 
 				// Check if the data from WorkflowExecute is identical to data received
 				// by the webhooks

@@ -1,5 +1,8 @@
+import path from 'path';
 import { readdirSync, readFileSync } from 'fs';
-import { mock } from 'jest-mock-extended';
+
+const BASE_DIR = path.resolve(__dirname, '../../..');
+
 import type {
 	IDataObject,
 	IDeferredPromise,
@@ -14,12 +17,11 @@ import type {
 	WorkflowTestData,
 	INodeTypeData,
 } from 'n8n-workflow';
+
 import { ApplicationError, NodeHelpers, WorkflowHooks } from 'n8n-workflow';
-import path from 'path';
 
 import { predefinedNodesTypes } from './constants';
-
-const BASE_DIR = path.resolve(__dirname, '../../..');
+import { mock } from 'jest-mock-extended';
 
 class NodeTypesClass implements INodeTypes {
 	constructor(private nodeTypes: INodeTypeData = predefinedNodesTypes) {}

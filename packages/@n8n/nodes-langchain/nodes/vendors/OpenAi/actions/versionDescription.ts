@@ -1,5 +1,5 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
-import type { INodeInputConfiguration, INodeTypeDescription } from 'n8n-workflow';
+import type { INodeTypeDescription } from 'n8n-workflow';
 import { NodeConnectionType } from 'n8n-workflow';
 
 import * as assistant from './assistant';
@@ -42,21 +42,13 @@ const prettifyOperation = (resource: string, operation: string) => {
 	return `${capitalize(operation)} ${capitalize(resource)}`;
 };
 
-const configureNodeInputs = (
-	resource: string,
-	operation: string,
-	hideTools: string,
-	memory: string | undefined,
-) => {
+const configureNodeInputs = (resource: string, operation: string, hideTools: string) => {
 	if (resource === 'assistant' && operation === 'message') {
-		const inputs: INodeInputConfiguration[] = [
+		return [
 			{ type: NodeConnectionType.Main },
+			{ type: NodeConnectionType.AiMemory, displayName: 'Memory', maxConnections: 1 },
 			{ type: NodeConnectionType.AiTool, displayName: 'Tools' },
 		];
-		if (memory !== 'threadId') {
-			inputs.push({ type: NodeConnectionType.AiMemory, displayName: 'Memory', maxConnections: 1 });
-		}
-		return inputs;
 	}
 	if (resource === 'text' && operation === 'message') {
 		if (hideTools === 'hide') {
@@ -75,19 +67,19 @@ const configureNodeInputs = (
 export const versionDescription: INodeTypeDescription = {
 	displayName: 'OpenAI',
 	name: 'openAi',
-	icon: { light: 'file:openAi.svg', dark: 'file:openAi.dark.svg' },
+	icon: 'file:openAi.svg',
 	group: ['transform'],
-	version: [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6],
+	version: [1, 1.1, 1.2, 1.3],
 	subtitle: `={{(${prettifyOperation})($parameter.resource, $parameter.operation)}}`,
 	description: 'Message an assistant or GPT, analyze images, generate audio, etc.',
 	defaults: {
 		name: 'OpenAI',
 	},
 	codex: {
-		alias: ['LangChain', 'ChatGPT', 'DallE', 'whisper', 'audio', 'transcribe', 'tts', 'assistant'],
+		alias: ['LangChain', 'ChatGPT', 'DallE'],
 		categories: ['AI'],
 		subcategories: {
-			AI: ['Agents', 'Miscellaneous', 'Root Nodes'],
+			AI: ['Agents', 'Miscellaneous'],
 		},
 		resources: {
 			primaryDocumentation: [
@@ -97,8 +89,8 @@ export const versionDescription: INodeTypeDescription = {
 			],
 		},
 	},
-	inputs: `={{(${configureNodeInputs})($parameter.resource, $parameter.operation, $parameter.hideTools, $parameter.memory ?? undefined)}}`,
-	outputs: [NodeConnectionType.Main],
+	inputs: `={{(${configureNodeInputs})($parameter.resource, $parameter.operation, $parameter.hideTools)}}`,
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'openAiApi',

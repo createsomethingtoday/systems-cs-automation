@@ -1,5 +1,28 @@
+<template>
+	<div @keyup.enter="applyOperation" @keyup.esc="cancelOperation">
+		<TagsTableHeader
+			:search="search"
+			:disabled="isHeaderDisabled()"
+			@search-change="onSearchChange"
+			@create-enable="onCreateEnable"
+		/>
+		<TagsTable
+			ref="tagsTable"
+			:rows="rows"
+			:is-loading="isLoading"
+			:is-saving="isSaving"
+			:new-name="newName"
+			data-test-id="tags-table"
+			@new-name-change="onNewNameChange"
+			@update-enable="onUpdateEnable"
+			@delete-enable="onDeleteEnable"
+			@cancel-operation="cancelOperation"
+			@apply-operation="applyOperation"
+		/>
+	</div>
+</template>
+
 <script lang="ts">
-import type { PropType } from 'vue';
 import { defineComponent } from 'vue';
 
 import type { ITag, ITagRow } from '@/Interface';
@@ -8,7 +31,6 @@ import TagsTable from '@/components/TagsManager/TagsView/TagsTable.vue';
 import { mapStores } from 'pinia';
 import { useUsersStore } from '@/stores/users.store';
 import { useRBACStore } from '@/stores/rbac.store';
-import type { BaseTextKey } from '@/plugins/i18n';
 
 const matches = (name: string, filter: string) =>
 	name.toLowerCase().trim().includes(filter.toLowerCase().trim());
@@ -16,30 +38,7 @@ const matches = (name: string, filter: string) =>
 export default defineComponent({
 	name: 'TagsView',
 	components: { TagsTableHeader, TagsTable },
-	props: {
-		usageColumnTitleLocaleKey: {
-			type: String as PropType<BaseTextKey>,
-			default: 'tagsTable.usage',
-		},
-		usageLocaleKey: {
-			type: String as PropType<BaseTextKey>,
-			default: 'tagsView.inUse',
-		},
-		tags: {
-			type: Array as () => ITag[],
-			required: true,
-		},
-		isLoading: {
-			type: Boolean,
-			required: true,
-		},
-	},
-	emits: {
-		update: null,
-		delete: null,
-		create: null,
-		disableCreate: null,
-	},
+	props: ['tags', 'isLoading'],
 	data() {
 		return {
 			createEnabled: false,
@@ -59,14 +58,14 @@ export default defineComponent({
 		rows(): ITagRow[] {
 			const getUsage = (count: number | undefined) =>
 				count && count > 0
-					? this.$locale.baseText(this.usageLocaleKey, { adjustToNumber: count })
+					? this.$locale.baseText('tagsView.inUse', { adjustToNumber: count })
 					: this.$locale.baseText('tagsView.notBeingUsed');
 
-			const disabled = this.isCreateEnabled || !!this.updateId || !!this.deleteId;
-			const tagRows = (this.tags ?? [])
-				.filter((tag) => this.stickyIds.has(tag.id) || matches(tag.name, this.search))
+			const disabled = this.isCreateEnabled || this.updateId || this.deleteId;
+			const tagRows = (this.tags || [])
+				.filter((tag: ITag) => this.stickyIds.has(tag.id) || matches(tag.name, this.search))
 				.map(
-					(tag): ITagRow => ({
+					(tag: ITag): ITagRow => ({
 						tag,
 						usage: getUsage(tag.usageCount),
 						disable: disabled && tag.id !== this.deleteId && tag.id !== this.updateId,
@@ -141,7 +140,7 @@ export default defineComponent({
 		createTag(): void {
 			this.isSaving = true;
 			const name = this.newName.trim();
-			const onCreate = (created: ITag | null) => {
+			const onCreate = (created: ITag | null, error?: Error) => {
 				if (created) {
 					this.stickyIds.add(created.id);
 					this.disableCreate();
@@ -177,28 +176,3 @@ export default defineComponent({
 	},
 });
 </script>
-
-<template>
-	<div @keyup.enter="applyOperation" @keyup.esc="cancelOperation">
-		<TagsTableHeader
-			:search="search"
-			:disabled="isHeaderDisabled()"
-			@search-change="onSearchChange"
-			@create-enable="onCreateEnable"
-		/>
-		<TagsTable
-			ref="tagsTable"
-			:rows="rows"
-			:is-loading="isLoading"
-			:is-saving="isSaving"
-			:new-name="newName"
-			:usage-column-title-locale-key="usageColumnTitleLocaleKey"
-			data-test-id="tags-table"
-			@new-name-change="onNewNameChange"
-			@update-enable="onUpdateEnable"
-			@delete-enable="onDeleteEnable"
-			@cancel-operation="cancelOperation"
-			@apply-operation="applyOperation"
-		/>
-	</div>
-</template>

@@ -3,6 +3,8 @@
 	"compilerOptions": {
 		"rootDir": ".",
 		"types": ["node", "jest"],
+		"composite": true,
+		"noEmit": true,
 		"baseUrl": "src",
 		"paths": {
 			"@/*": ["./*"]

@@ -1,8 +1,6 @@
 import Container from 'typedi';
-
-import { Cipher } from '@/Cipher';
 import { InstanceSettings } from '@/InstanceSettings';
-
+import { Cipher } from '@/Cipher';
 import { mockInstance } from './utils';
 
 describe('Cipher', () => {

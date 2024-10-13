@@ -1,12 +1,11 @@
-import {
-	type IExecuteFunctions,
-	type IDataObject,
-	type ILoadOptionsFunctions,
-	type INodeExecutionData,
-	type INodePropertyOptions,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodePropertyOptions,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import { phantombusterApiRequest, validateJSON } from './GenericFunctions';
@@ -30,8 +29,8 @@ export class Phantombuster implements INodeType {
 		defaults: {
 			name: 'Phantombuster',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'phantombusterApi',

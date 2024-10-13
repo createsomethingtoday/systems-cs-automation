@@ -4,7 +4,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import * as spreadsheet from './actions/spreadsheet.operation';
 import * as toBinary from './actions/toBinary.operation';
@@ -13,18 +12,19 @@ import * as toJson from './actions/toJson.operation';
 import * as iCall from './actions/iCall.operation';
 
 export class ConvertToFile implements INodeType {
+	// eslint-disable-next-line n8n-nodes-base/node-class-description-missing-subtitle
 	description: INodeTypeDescription = {
 		displayName: 'Convert to File',
 		name: 'convertToFile',
-		icon: { light: 'file:convertToFile.svg', dark: 'file:convertToFile.dark.svg' },
+		icon: 'file:convertToFile.svg',
 		group: ['input'],
 		version: [1, 1.1],
 		description: 'Convert JSON data to binary data',
 		defaults: {
 			name: 'Convert to File',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Operation',

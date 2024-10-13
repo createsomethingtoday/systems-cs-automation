@@ -6,7 +6,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import isEmpty from 'lodash/isEmpty';
 import omit from 'lodash/omit';
@@ -36,8 +36,8 @@ export class Raindrop implements INodeType {
 		defaults: {
 			name: 'Raindrop',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'raindropOAuth2Api',

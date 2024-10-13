@@ -2,7 +2,6 @@
 
 @mixin theme {
 	// Primary tokens
-	--color-danger: var(--prim-color-alt-k);
 
 	// Text
 	--color-text-dark: #1a1a1a; // Dark gray
@@ -32,29 +31,6 @@
 	--box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.2);
 
 	// Secondary tokens
-
-	// AI Assistant
-	--color-assistant-highlight-1: #8c90f2;
-	--color-assistant-highlight-2: #a977f0;
-	--color-assistant-highlight-3: #f0778b;
-	--color-askAssistant-button-background: #2e2e2e;
-	--color-askAssistant-button-background-hover: #383839;
-	--color-askAssistant-button-background-active: #414244;
-	--color-assistant-inner-highlight-hover: var(--color-askAssistant-button-background-hover);
-	--color-assistant-inner-highlight-active: var(--color-askAssistant-button-background-active);
-
-	--color-assistant-highlight-gradient: linear-gradient(
-		105deg,
-		var(--color-assistant-highlight-1) 0%,
-		var(--color-assistant-highlight-2) 50%,
-		var(--color-assistant-highlight-3) 100%
-	);
-	--color-assistant-highlight-reverse: linear-gradient(
-		105deg,
-		var(--color-assistant-highlight-3) 0%,
-		var(--color-assistant-highlight-2) 50%,
-		var(--color-assistant-highlight-1) 100%
-	);
 
 	// LangChain
 	--color-lm-chat-messages-background: #303030; // Medium black
@@ -96,21 +72,6 @@
 	--color-sticky-border-6: #8c8c8c;
 	--color-sticky-background-7: #8c8c8c;
 	--color-sticky-border-7: #999999;
-
-	// NodeIcon
-	--color-node-icon-gray: var(--prim-gray-120);
-	--color-node-icon-black: var(--prim-gray-10);
-	--color-node-icon-blue: #898fff;
-	--color-node-icon-light-blue: #58abff;
-	--color-node-icon-dark-blue: #7ba7ff;
-	--color-node-icon-orange-red: var(--prim-color-primary);
-	--color-node-icon-pink-red: #f85d82;
-	--color-node-icon-red: var(--prim-color-alt-k);
-	--color-node-icon-light-green: #20b69e;
-	--color-node-icon-green: #38cb7a;
-	--color-node-icon-dark-green: #86decc;
-	--color-node-icon-purple: #9b6dd5;
-	--color-node-icon-crimson: #f188a2;
 
 	// Expressions, autocomplete, infobox
 	--color-valid-resolvable-foreground: #00ff00; // Green for valid

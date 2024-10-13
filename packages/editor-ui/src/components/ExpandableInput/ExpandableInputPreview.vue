@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import ExpandableInputBase from './ExpandableInputBase.vue';
-
-type Props = {
-	modelValue: string;
-};
-
-defineProps<Props>();
-</script>
-
 <template>
 	<ExpandableInputBase :model-value="modelValue" :static-size="true">
 		<input
@@ -18,6 +8,17 @@ defineProps<Props>();
 		/>
 	</ExpandableInputBase>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import ExpandableInputBase from './ExpandableInputBase.vue';
+
+export default defineComponent({
+	name: 'ExpandableInputPreview',
+	components: { ExpandableInputBase },
+	props: ['modelValue'],
+});
+</script>
 
 <style lang="scss" scoped>
 input,

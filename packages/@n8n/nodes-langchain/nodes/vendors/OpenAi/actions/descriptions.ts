@@ -1,6 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-export const modelRLC = (searchListMethod: string = 'modelSearch'): INodeProperties => ({
+export const modelRLC: INodeProperties = {
 	displayName: 'Model',
 	name: 'modelId',
 	type: 'resourceLocator',
@@ -12,7 +12,7 @@ export const modelRLC = (searchListMethod: string = 'modelSearch'): INodePropert
 			name: 'list',
 			type: 'list',
 			typeOptions: {
-				searchListMethod,
+				searchListMethod: 'modelSearch',
 				searchable: true,
 			},
 		},
@@ -23,7 +23,7 @@ export const modelRLC = (searchListMethod: string = 'modelSearch'): INodePropert
 			placeholder: 'e.g. gpt-4',
 		},
 	],
-});
+};
 
 export const assistantRLC: INodeProperties = {
 	displayName: 'Assistant',

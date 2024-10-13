@@ -16,7 +16,7 @@ export class ChainSummarization extends VersionedNodeType {
 				alias: ['LangChain'],
 				categories: ['AI'],
 				subcategories: {
-					AI: ['Chains', 'Root Nodes'],
+					AI: ['Chains'],
 				},
 				resources: {
 					primaryDocumentation: [

@@ -1,3 +1,4 @@
+/* eslint-disable n8n-nodes-base/node-filename-against-convention */
 import type {
 	IExecuteFunctions,
 	IDataObject,
@@ -8,14 +9,9 @@ import type {
 	INodeTypeBaseDescription,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import {
-	NodeConnectionType,
-	NodeOperationError,
-	SEND_AND_WAIT_OPERATION,
-	WAIT_TIME_UNLIMITED,
-} from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
-import type { IEmail } from '../../../../utils/sendAndWait/interfaces';
+import type { IEmail } from '../GenericFunctions';
 import {
 	encodeEmail,
 	googleApiRequest,
@@ -38,12 +34,6 @@ import { draftFields, draftOperations } from './DraftDescription';
 
 import { threadFields, threadOperations } from './ThreadDescription';
 
-import {
-	getSendAndWaitProperties,
-	createEmail,
-	sendAndWaitWebhook,
-} from '../../../../utils/sendAndWait/utils';
-
 const versionDescription: INodeTypeDescription = {
 	displayName: 'Gmail',
 	name: 'gmail',
@@ -55,9 +45,8 @@ const versionDescription: INodeTypeDescription = {
 	defaults: {
 		name: 'Gmail',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
-	usableAsTool: true,
+	inputs: ['main'],
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'googleApi',
@@ -76,17 +65,6 @@ const versionDescription: INodeTypeDescription = {
 					authentication: ['oAuth2'],
 				},
 			},
-		},
-	],
-	webhooks: [
-		{
-			name: 'default',
-			httpMethod: 'GET',
-			responseMode: 'onReceived',
-			responseData: '',
-			path: '={{ $nodeId }}',
-			restartWebhook: true,
-			isFullPath: true,
 		},
 	],
 	properties: [
@@ -147,16 +125,6 @@ const versionDescription: INodeTypeDescription = {
 		//-------------------------------
 		...messageOperations,
 		...messageFields,
-		...getSendAndWaitProperties([
-			{
-				displayName: 'To',
-				name: 'sendTo',
-				type: 'string',
-				default: '',
-				required: true,
-				placeholder: 'e.g. info@example.com',
-			},
-		]),
 		//-------------------------------
 		// Thread Operations
 		//-------------------------------
@@ -253,8 +221,6 @@ export class GmailV2 implements INodeType {
 		},
 	};
 
-	webhook = sendAndWaitWebhook;
-
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
@@ -262,17 +228,6 @@ export class GmailV2 implements INodeType {
 		const operation = this.getNodeParameter('operation', 0);
 		const nodeVersion = this.getNode().typeVersion;
 		const instanceId = this.getInstanceId();
-
-		if (resource === 'message' && operation === SEND_AND_WAIT_OPERATION) {
-			const email: IEmail = createEmail(this);
-
-			await googleApiRequest.call(this, 'POST', '/gmail/v1/users/me/messages/send', {
-				raw: await encodeEmail(email),
-			});
-
-			await this.putExecutionToWait(new Date(WAIT_TIME_UNLIMITED));
-			return [this.getInputData()];
-		}
 
 		let responseData;
 

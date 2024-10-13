@@ -1,13 +1,11 @@
+import { Service } from 'typedi';
 import type { DeepPartial, EntityManager, FindManyOptions } from '@n8n/typeorm';
 import { DataSource, In, IsNull, Not, Repository } from '@n8n/typeorm';
-import { Service } from 'typedi';
-
 import type { ListQuery } from '@/requests';
 
-import { Project } from '../entities/project';
-import { ProjectRelation } from '../entities/project-relation';
-import { type GlobalRole, User } from '../entities/user';
-
+import { type GlobalRole, User } from '../entities/User';
+import { Project } from '../entities/Project';
+import { ProjectRelation } from '../entities/ProjectRelation';
 @Service()
 export class UserRepository extends Repository<User> {
 	constructor(dataSource: DataSource) {
@@ -150,37 +148,5 @@ export class UserRepository extends Repository<User> {
 		// TODO: use a transactions
 		// This is blocked by TypeORM having concurrency issues with transactions
 		return await createInner(this.manager);
-	}
-
-	/**
-	 * Find the user that owns the personal project that owns the workflow.
-	 *
-	 * Returns null if the workflow does not exist or is owned by a team project.
-	 */
-	async findPersonalOwnerForWorkflow(workflowId: string): Promise<User | null> {
-		return await this.findOne({
-			where: {
-				projectRelations: {
-					role: 'project:personalOwner',
-					project: { sharedWorkflows: { workflowId, role: 'workflow:owner' } },
-				},
-			},
-		});
-	}
-
-	/**
-	 * Find the user that owns the personal project.
-	 *
-	 * Returns null if the project does not exist or is not a personal project.
-	 */
-	async findPersonalOwnerForProject(projectId: string): Promise<User | null> {
-		return await this.findOne({
-			where: {
-				projectRelations: {
-					role: 'project:personalOwner',
-					projectId,
-				},
-			},
-		});
 	}
 }

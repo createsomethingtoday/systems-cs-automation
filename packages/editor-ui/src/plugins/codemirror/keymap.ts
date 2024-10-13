@@ -7,7 +7,7 @@ import {
 import { indentLess, indentMore, insertNewlineAndIndent, redo, undo } from '@codemirror/commands';
 import type { EditorView, KeyBinding } from '@codemirror/view';
 
-export const tabKeyMap = (blurOnTab = false): KeyBinding[] => [
+export const tabKeyMap = (singleLine = false): KeyBinding[] => [
 	{
 		any(view, event) {
 			if (
@@ -27,7 +27,7 @@ export const tabKeyMap = (blurOnTab = false): KeyBinding[] => [
 				return acceptCompletion(view);
 			}
 
-			if (!blurOnTab) return indentMore(view);
+			if (!singleLine) return indentMore(view);
 			return false;
 		},
 	},

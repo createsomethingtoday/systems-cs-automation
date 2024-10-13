@@ -1,64 +1,26 @@
-import type { AiAssistantSDK } from '@n8n_io/ai-assistant-sdk';
-import type { Response } from 'express';
-import { ErrorReporterProxy } from 'n8n-workflow';
-import { strict as assert } from 'node:assert';
-import { WritableStream } from 'node:stream/web';
-
 import { Post, RestController } from '@/decorators';
-import { InternalServerError } from '@/errors/response-errors/internal-server.error';
-import { AiAssistantRequest } from '@/requests';
-import { AiService } from '@/services/ai.service';
-
-type FlushableResponse = Response & { flush: () => void };
+import { AIRequest } from '@/requests';
+import { AIService } from '@/services/ai.service';
+import { FailedDependencyError } from '@/errors/response-errors/failed-dependency.error';
 
 @RestController('/ai')
-export class AiController {
-	constructor(private readonly aiService: AiService) {}
+export class AIController {
+	constructor(private readonly aiService: AIService) {}
 
-	@Post('/chat', { rateLimit: { limit: 100 } })
-	async chat(req: AiAssistantRequest.Chat, res: FlushableResponse) {
-		try {
-			const aiResponse = await this.aiService.chat(req.body, req.user);
-			if (aiResponse.body) {
-				res.header('Content-type', 'application/json-lines').flush();
-				await aiResponse.body.pipeTo(
-					new WritableStream({
-						write(chunk) {
-							res.write(chunk);
-							res.flush();
-						},
-					}),
-				);
-				res.end();
-			}
-		} catch (e) {
-			assert(e instanceof Error);
-			ErrorReporterProxy.error(e);
-			throw new InternalServerError(`Something went wrong: ${e.message}`);
-		}
-	}
+	/**
+	 * Generate CURL request and additional HTTP Node metadata for given service and request
+	 */
+	@Post('/generate-curl')
+	async generateCurl(req: AIRequest.GenerateCurl): Promise<{ curl: string; metadata?: object }> {
+		const { service, request } = req.body;
 
-	@Post('/chat/apply-suggestion')
-	async applySuggestion(
-		req: AiAssistantRequest.ApplySuggestionPayload,
-	): Promise<AiAssistantSDK.ApplySuggestionResponse> {
 		try {
-			return await this.aiService.applySuggestion(req.body, req.user);
-		} catch (e) {
-			assert(e instanceof Error);
-			ErrorReporterProxy.error(e);
-			throw new InternalServerError(`Something went wrong: ${e.message}`);
-		}
-	}
-
-	@Post('/ask-ai')
-	async askAi(req: AiAssistantRequest.AskAiPayload): Promise<AiAssistantSDK.AskAiResponsePayload> {
-		try {
-			return await this.aiService.askAi(req.body, req.user);
-		} catch (e) {
-			assert(e instanceof Error);
-			ErrorReporterProxy.error(e);
-			throw new InternalServerError(`Something went wrong: ${e.message}`);
+			return await this.aiService.generateCurl(service, request);
+		} catch (aiServiceError) {
+			throw new FailedDependencyError(
+				(aiServiceError as Error).message ||
+					'Failed to generate HTTP Request Node parameters due to an issue with an external dependency. Please try again later.',
+			);
 		}
 	}
 }

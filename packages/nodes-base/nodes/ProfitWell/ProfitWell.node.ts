@@ -1,12 +1,11 @@
-import {
-	type IExecuteFunctions,
-	type IDataObject,
-	type ILoadOptionsFunctions,
-	type INodeExecutionData,
-	type INodePropertyOptions,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodePropertyOptions,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import type { Metrics } from './GenericFunctions';
@@ -24,8 +23,8 @@ export class ProfitWell implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'ProfitWell',
 		name: 'profitWell',
-
-		icon: { light: 'file:profitwell.svg', dark: 'file:profitwell.dark.svg' },
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:profitwell.png',
 		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -33,8 +32,8 @@ export class ProfitWell implements INodeType {
 		defaults: {
 			name: 'ProfitWell',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'profitWellApi',

@@ -1,10 +1,11 @@
-import type { User } from '@/databases/entities/user';
-import { MessageEventBus } from '@/eventbus/message-event-bus/message-event-bus';
-import { ExecutionRecoveryService } from '@/executions/execution-recovery.service';
+import type { SuperAgentTest } from 'supertest';
 
-import { createUser } from './shared/db/users';
-import type { SuperAgentTest } from './shared/types';
+import type { User } from '@db/entities/User';
+import { MessageEventBus } from '@/eventbus/MessageEventBus/MessageEventBus';
+import { ExecutionDataRecoveryService } from '@/eventbus/executionDataRecovery.service';
+
 import * as utils from './shared/utils/';
+import { createUser } from './shared/db/users';
 import { mockInstance } from '../shared/mocking';
 
 /**
@@ -17,7 +18,7 @@ let owner: User;
 let authOwnerAgent: SuperAgentTest;
 
 mockInstance(MessageEventBus);
-mockInstance(ExecutionRecoveryService);
+mockInstance(ExecutionDataRecoveryService);
 const testServer = utils.setupTestServer({
 	endpointGroups: ['eventBus'],
 	enabledFeatures: [], // do not enable logstreaming

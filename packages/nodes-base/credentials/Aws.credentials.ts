@@ -126,28 +126,6 @@ export const regions = [
 ] as const;
 
 export type AWSRegion = (typeof regions)[number]['name'];
-export type AwsCredentialsType = {
-	region: AWSRegion;
-	accessKeyId: string;
-	secretAccessKey: string;
-	temporaryCredentials: boolean;
-	customEndpoints: boolean;
-	sessionToken?: string;
-	rekognitionEndpoint?: string;
-	lambdaEndpoint?: string;
-	snsEndpoint?: string;
-	sesEndpoint?: string;
-	sqsEndpoint?: string;
-	s3Endpoint?: string;
-};
-
-// Some AWS services are global and don't have a region
-// https://docs.aws.amazon.com/general/latest/gr/rande.html#global-endpoints
-// Example: iam.amazonaws.com (global), s3.us-east-1.amazonaws.com (regional)
-function parseAwsUrl(url: URL): { region: AWSRegion | null; service: string } {
-	const [service, region] = url.hostname.replace('amazonaws.com', '').split('.');
-	return { service, region: region as AWSRegion };
-}
 
 export class Aws implements ICredentialType {
 	name = 'aws';
@@ -156,7 +134,7 @@ export class Aws implements ICredentialType {
 
 	documentationUrl = 'aws';
 
-	icon = { light: 'file:icons/AWS.svg', dark: 'file:icons/AWS.dark.svg' } as const;
+	icon = 'file:icons/AWS.svg';
 
 	properties: INodeProperties[] = [
 		{
@@ -298,19 +276,18 @@ export class Aws implements ICredentialType {
 	];
 
 	async authenticate(
-		rawCredentials: ICredentialDataDecryptedObject,
+		credentials: ICredentialDataDecryptedObject,
 		requestOptions: IHttpRequestOptions,
 	): Promise<IHttpRequestOptions> {
-		const credentials = rawCredentials as AwsCredentialsType;
 		let endpoint: URL;
 		let service = requestOptions.qs?.service as string;
-		let path = (requestOptions.qs?.path as string) ?? '';
+		let path = requestOptions.qs?.path;
 		const method = requestOptions.method;
 		let body = requestOptions.body;
 
 		let region = credentials.region;
 		if (requestOptions.qs?._region) {
-			region = requestOptions.qs._region as AWSRegion;
+			region = requestOptions.qs._region as string;
 			delete requestOptions.qs._region;
 		}
 
@@ -333,40 +310,36 @@ export class Aws implements ICredentialType {
 					console.log(err);
 				}
 			}
-			const parsed = parseAwsUrl(endpoint);
-			service = parsed.service;
-			if (parsed.region) {
-				region = parsed.region;
-			}
+			service = endpoint.hostname.split('.')[0];
+			region = endpoint.hostname.split('.')[1];
 		} else {
 			if (!requestOptions.baseURL && !requestOptions.url) {
 				let endpointString: string;
 				if (service === 'lambda' && credentials.lambdaEndpoint) {
-					endpointString = credentials.lambdaEndpoint;
+					endpointString = credentials.lambdaEndpoint as string;
 				} else if (service === 'sns' && credentials.snsEndpoint) {
-					endpointString = credentials.snsEndpoint;
+					endpointString = credentials.snsEndpoint as string;
 				} else if (service === 'sqs' && credentials.sqsEndpoint) {
-					endpointString = credentials.sqsEndpoint;
+					endpointString = credentials.sqsEndpoint as string;
 				} else if (service === 's3' && credentials.s3Endpoint) {
-					endpointString = credentials.s3Endpoint;
+					endpointString = credentials.s3Endpoint as string;
 				} else if (service === 'ses' && credentials.sesEndpoint) {
-					endpointString = credentials.sesEndpoint;
+					endpointString = credentials.sesEndpoint as string;
 				} else if (service === 'rekognition' && credentials.rekognitionEndpoint) {
-					endpointString = credentials.rekognitionEndpoint;
+					endpointString = credentials.rekognitionEndpoint as string;
 				} else if (service === 'sqs' && credentials.sqsEndpoint) {
-					endpointString = credentials.sqsEndpoint;
+					endpointString = credentials.sqsEndpoint as string;
 				} else if (service) {
 					endpointString = `https://${service}.${region}.amazonaws.com`;
 				}
-				endpoint = new URL(endpointString!.replace('{region}', region) + path);
+				endpoint = new URL(
+					endpointString!.replace('{region}', region as string) + (path as string),
+				);
 			} else {
 				// If no endpoint is set, we try to decompose the path and use the default endpoint
-				const customUrl = new URL(`${requestOptions.baseURL!}${requestOptions.url}${path}`);
-				const parsed = parseAwsUrl(customUrl);
-				service = parsed.service;
-				if (parsed.region) {
-					region = parsed.region;
-				}
+				const customUrl = new URL(`${requestOptions.baseURL!}${requestOptions.url}${path ?? ''}`);
+				service = customUrl.hostname.split('.')[0];
+				region = customUrl.hostname.split('.')[1];
 				if (service === 'sts') {
 					try {
 						customUrl.searchParams.set('Action', 'GetCallerIdentity');

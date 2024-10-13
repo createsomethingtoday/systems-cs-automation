@@ -1,6 +1,5 @@
+import type { IMenuItem } from '@/types';
 import type { RouteLocationNormalizedLoaded, RouteLocationRaw } from 'vue-router';
-
-import type { IMenuItem } from 'n8n-design-system/types';
 
 /**
  * Checks if the given menu item matches the current route.

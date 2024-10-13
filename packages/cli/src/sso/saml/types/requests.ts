@@ -1,6 +1,5 @@
 import type { AuthenticatedRequest, AuthlessRequest } from '@/requests';
-
-import type { SamlPreferences } from './saml-preferences';
+import type { SamlPreferences } from './samlPreferences';
 
 export declare namespace SamlConfiguration {
 	type Update = AuthenticatedRequest<{}, {}, SamlPreferences, {}>;
@@ -10,6 +9,7 @@ export declare namespace SamlConfiguration {
 		{},
 		{},
 		{
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			RelayState?: string;
 		},
 		{}

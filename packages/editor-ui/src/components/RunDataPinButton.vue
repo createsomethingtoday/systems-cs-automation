@@ -18,7 +18,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-	togglePinData: [];
+	(event: 'togglePinData'): void;
 }>();
 
 const visible = computed(() =>
@@ -60,6 +60,7 @@ const visible = computed(() =>
 
 <style lang="scss" module>
 .pinDataButton {
+	margin-left: var(--spacing-2xs);
 	svg {
 		transition: transform 0.3s ease;
 	}

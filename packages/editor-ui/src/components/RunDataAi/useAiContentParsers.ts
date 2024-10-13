@@ -47,12 +47,10 @@ const outputTypeParsers: {
 				parsed: true,
 			};
 		}
-
 		// Use the memory parser if the response is a memory-like(chat) object
 		if (response.messages && Array.isArray(response.messages)) {
 			return outputTypeParsers[NodeConnectionType.AiMemory](execData);
 		}
-
 		if (response.generations) {
 			const generations = response.generations as LmGeneration[];
 
@@ -134,11 +132,7 @@ const outputTypeParsers: {
 						} else if (content.id.includes('SystemMessage')) {
 							message = `**System Message:** ${message}`;
 						}
-						if (
-							execData.action &&
-							typeof execData.action !== 'object' &&
-							execData.action !== 'getMessages'
-						) {
+						if (execData.action && execData.action !== 'getMessages') {
 							message = `## Action: ${execData.action}\n\n${message}`;
 						}
 
@@ -222,8 +216,8 @@ export const useAiContentParsers = () => {
 		}
 
 		const contentJson = executionData.map((node) => {
-			const hasBinaryData = !isObjectEmpty(node.binary);
-			return hasBinaryData ? node.binary : node.json;
+			const hasBinarData = !isObjectEmpty(node.binary);
+			return hasBinarData ? node.binary : node.json;
 		});
 
 		const parser = outputTypeParsers[endpointType as AllowedEndpointType];

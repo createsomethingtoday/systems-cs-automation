@@ -1,12 +1,12 @@
 /* eslint-disable n8n-nodes-base/node-filename-against-convention */
-import { NodeConnectionType, type INodeTypeDescription } from 'n8n-workflow';
+import type { INodeTypeDescription } from 'n8n-workflow';
 
 import * as database from './database/Database.resource';
 
 export const versionDescription: INodeTypeDescription = {
 	displayName: 'MySQL',
 	name: 'mySql',
-	icon: { light: 'file:mysql.svg', dark: 'file:mysql.dark.svg' },
+	icon: 'file:mysql.svg',
 	group: ['input'],
 	version: [2, 2.1, 2.2, 2.3, 2.4],
 	subtitle: '={{ $parameter["operation"] }}',
@@ -14,9 +14,8 @@ export const versionDescription: INodeTypeDescription = {
 	defaults: {
 		name: 'MySQL',
 	},
-	inputs: [NodeConnectionType.Main],
-	outputs: [NodeConnectionType.Main],
-	usableAsTool: true,
+	inputs: ['main'],
+	outputs: ['main'],
 	credentials: [
 		{
 			name: 'mySql',

@@ -4,14 +4,12 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 export class ErrorTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Error Trigger',
 		name: 'errorTrigger',
 		icon: 'fa:bug',
-		iconColor: 'blue',
 		group: ['trigger'],
 		version: 1,
 		description: 'Triggers the workflow when another workflow has an error',
@@ -23,7 +21,7 @@ export class ErrorTrigger implements INodeType {
 			color: '#0000FF',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName:

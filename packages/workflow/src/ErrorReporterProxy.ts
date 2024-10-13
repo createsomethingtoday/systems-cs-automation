@@ -1,5 +1,5 @@
-import { ApplicationError, type ReportingOptions } from './errors/application.error';
 import * as Logger from './LoggerProxy';
+import { ApplicationError, type ReportingOptions } from './errors/application.error';
 
 interface ErrorReporter {
 	report: (error: Error | string, options?: ReportingOptions) => void;
@@ -39,4 +39,4 @@ export const info = (msg: string, options?: ReportingOptions) => {
 };
 
 export const warn = (warning: Error | string, options?: ReportingOptions) =>
-	error(warning, { ...options, level: 'warning' });
+	error(warning, { level: 'warning', ...options });

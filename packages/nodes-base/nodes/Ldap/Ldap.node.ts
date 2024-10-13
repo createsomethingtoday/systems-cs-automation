@@ -10,7 +10,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 import { Attribute, Change } from 'ldapts';
 import { ldapFields } from './LdapDescription';
@@ -20,7 +20,7 @@ export class Ldap implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Ldap',
 		name: 'ldap',
-		icon: { light: 'file:ldap.svg', dark: 'file:ldap.dark.svg' },
+		icon: 'file:ldap.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -28,8 +28,8 @@ export class Ldap implements INodeType {
 		defaults: {
 			name: 'LDAP',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				// eslint-disable-next-line n8n-nodes-base/node-class-description-credentials-name-unsuffixed

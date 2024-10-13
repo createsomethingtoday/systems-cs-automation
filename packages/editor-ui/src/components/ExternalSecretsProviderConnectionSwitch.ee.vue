@@ -1,29 +1,37 @@
 <script lang="ts" setup>
+import type { PropType } from 'vue';
 import type { ExternalSecretsProvider } from '@/Interface';
 import { useExternalSecretsStore } from '@/stores/externalSecrets.ee.store';
 import { useToast } from '@/composables/useToast';
 import { useI18n } from '@/composables/useI18n';
+import { useLoadingService } from '@/composables/useLoadingService';
 import { computed, onMounted, ref } from 'vue';
 import type { EventBus } from 'n8n-design-system/utils';
 
 const emit = defineEmits<{
-	change: [value: boolean];
+	(e: 'change', value: boolean): void;
 }>();
 
-const props = withDefaults(
-	defineProps<{
-		provider: ExternalSecretsProvider;
-		eventBus?: EventBus;
-		disabled?: boolean;
-		beforeUpdate?: (value: boolean) => Promise<boolean>;
-	}>(),
-	{
-		eventBus: undefined,
-		disabled: false,
-		beforeUpdate: undefined,
+const props = defineProps({
+	provider: {
+		type: Object as PropType<ExternalSecretsProvider>,
+		required: true,
 	},
-);
+	eventBus: {
+		type: Object as PropType<EventBus>,
+		default: undefined,
+	},
+	disabled: {
+		type: Boolean,
+		default: false,
+	},
+	beforeUpdate: {
+		type: Function,
+		default: undefined,
+	},
+});
 
+const loadingService = useLoadingService();
 const externalSecretsStore = useExternalSecretsStore();
 const i18n = useI18n();
 const toast = useToast();
@@ -46,7 +54,7 @@ async function onUpdateConnected(value: boolean) {
 
 		if (props.beforeUpdate) {
 			const result = await props.beforeUpdate(value);
-			if (!result) {
+			if (result === false) {
 				saving.value = false;
 				return;
 			}

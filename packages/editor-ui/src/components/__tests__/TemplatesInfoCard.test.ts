@@ -53,7 +53,7 @@ describe('TemplatesInfoCard', () => {
 	});
 
 	it('should render component properly', () => {
-		const { getByText, container } = renderComponent({
+		const { getByText, container, debug } = renderComponent({
 			pinia,
 			props: {
 				collection: TEST_COLLECTION,

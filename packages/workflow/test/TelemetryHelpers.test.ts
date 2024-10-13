@@ -1,19 +1,14 @@
-import { mock } from 'jest-mock-extended';
 import { v5 as uuidv5, v3 as uuidv3, v4 as uuidv4, v1 as uuidv1 } from 'uuid';
-
-import { STICKY_NODE_TYPE } from '@/Constants';
-import { ApplicationError } from '@/errors';
-import { NodeConnectionType, type IWorkflowBase } from '@/Interfaces';
-import * as nodeHelpers from '@/NodeHelpers';
 import {
 	ANONYMIZATION_CHARACTER as CHAR,
 	generateNodesGraph,
 	getDomainBase,
 	getDomainPath,
 } from '@/TelemetryHelpers';
-import { randomInt } from '@/utils';
-
+import { ApplicationError, STICKY_NODE_TYPE, type IWorkflowBase } from '@/index';
 import { nodeTypes } from './ExpressionExtensions/Helpers';
+import { mock } from 'jest-mock-extended';
+import * as nodeHelpers from '@/NodeHelpers';
 
 describe('getDomainBase should return protocol plus domain', () => {
 	test('in valid URLs', () => {
@@ -112,7 +107,7 @@ describe('generateNodesGraph', () => {
 			],
 			connections: {
 				'When clicking "Execute Workflow"': {
-					main: [[{ node: 'Google Sheets', type: NodeConnectionType.Main, index: 0 }]],
+					main: [[{ node: 'Google Sheets', type: 'main', index: 0 }]],
 				},
 			},
 			settings: { executionOrder: 'v1' },
@@ -216,7 +211,7 @@ describe('generateNodesGraph', () => {
 			],
 			connections: {
 				'When clicking "Execute Workflow"': {
-					main: [[{ node: 'Google Sheets', type: NodeConnectionType.Main, index: 0 }]],
+					main: [[{ node: 'Google Sheets', type: 'main', index: 0 }]],
 				},
 			},
 			settings: { executionOrder: 'v1' },
@@ -292,7 +287,7 @@ describe('generateNodesGraph', () => {
 			],
 			connections: {
 				'When clicking "Execute Workflow"': {
-					main: [[{ node: 'Google Sheets', type: NodeConnectionType.Main, index: 0 }]],
+					main: [[{ node: 'Google Sheets', type: 'main', index: 0 }]],
 				},
 			},
 			settings: { executionOrder: 'v1' },
@@ -370,7 +365,7 @@ describe('generateNodesGraph', () => {
 			],
 			connections: {
 				'When clicking "Execute Workflow"': {
-					main: [[{ node: 'Google Sheets', type: NodeConnectionType.Main, index: 0 }]],
+					main: [[{ node: 'Google Sheets', type: 'main', index: 0 }]],
 				},
 			},
 			settings: { executionOrder: 'v1' },
@@ -672,7 +667,7 @@ describe('generateNodesGraph', () => {
 				{
 					parameters: {},
 					id: 'fe69383c-e418-4f98-9c0e-924deafa7f93',
-					name: 'When clicking ‘Test workflow’',
+					name: 'When clicking "Test workflow"',
 					type: 'n8n-nodes-base.manualTrigger',
 					typeVersion: 1,
 					position: [540, 220],
@@ -697,12 +692,12 @@ describe('generateNodesGraph', () => {
 				},
 			],
 			connections: {
-				'When clicking ‘Test workflow’': {
+				'When clicking "Test workflow"': {
 					main: [
 						[
 							{
 								node: 'Chain',
-								type: NodeConnectionType.Main,
+								type: 'main',
 								index: 0,
 							},
 						],
@@ -713,7 +708,7 @@ describe('generateNodesGraph', () => {
 						[
 							{
 								node: 'Chain',
-								type: NodeConnectionType.AiLanguageModel,
+								type: 'ai_languageModel',
 								index: 0,
 							},
 						],
@@ -763,7 +758,7 @@ describe('generateNodesGraph', () => {
 				is_pinned: false,
 			},
 			nameIndices: {
-				'When clicking ‘Test workflow’': '0',
+				'When clicking "Test workflow"': '0',
 				Chain: '1',
 				Model: '2',
 			},
@@ -877,12 +872,22 @@ function uuidUrls(
 	];
 }
 
-function numericId(length = randomInt(1, 10)) {
-	return Array.from({ length }, () => randomInt(10)).join('');
+function digit() {
+	return Math.floor(Math.random() * 10);
+}
+
+function positiveDigit(): number {
+	const d = digit();
+
+	return d === 0 ? positiveDigit() : d;
+}
+
+function numericId(length = positiveDigit()) {
+	return Array.from({ length }, digit).join('');
 }
 
 function alphanumericId() {
 	return chooseRandomly([`john${numericId()}`, `title${numericId(1)}`, numericId()]);
 }
 
-const chooseRandomly = <T>(array: T[]) => array[randomInt(array.length)];
+const chooseRandomly = <T>(array: T[]) => array[Math.floor(Math.random() * array.length)];

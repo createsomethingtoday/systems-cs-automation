@@ -10,7 +10,6 @@ export class DateTime extends VersionedNodeType {
 			displayName: 'Date & Time',
 			name: 'dateTime',
 			icon: 'fa:clock',
-			iconColor: 'green',
 			group: ['transform'],
 			defaultVersion: 2,
 			description: 'Allows you to manipulate date and time values',

@@ -9,7 +9,7 @@ export class MySql extends VersionedNodeType {
 		const baseDescription: INodeTypeBaseDescription = {
 			displayName: 'MySQL',
 			name: 'mySql',
-			icon: { light: 'file:mysql.svg', dark: 'file:mysql.dark.svg' },
+			icon: 'file:mysql.svg',
 			group: ['input'],
 			defaultVersion: 2.4,
 			description: 'Get, add and update data in MySQL',

@@ -1,6 +1,5 @@
 import { WorkflowPage } from '../pages';
 import { MessageBox as MessageBoxClass } from '../pages/modals/message-box';
-import { errorToast, successToast } from '../pages/notifications';
 
 const workflowPage = new WorkflowPage();
 const messageBox = new MessageBoxClass();
@@ -30,9 +29,9 @@ describe('Import workflow', () => {
 
 			workflowPage.getters.canvasNodes().should('have.length', 4);
 
-			errorToast().should('not.exist');
+			workflowPage.getters.errorToast().should('not.exist');
 
-			successToast().should('not.exist');
+			workflowPage.getters.successToast().should('not.exist');
 		});
 
 		it('clicking outside modal should not show error toast', () => {
@@ -43,7 +42,7 @@ describe('Import workflow', () => {
 
 			cy.get('body').click(0, 0);
 
-			errorToast().should('not.exist');
+			workflowPage.getters.errorToast().should('not.exist');
 		});
 
 		it('canceling modal should not show error toast', () => {
@@ -53,7 +52,7 @@ describe('Import workflow', () => {
 			workflowPage.getters.workflowMenuItemImportFromURLItem().click();
 			messageBox.getters.cancel().click();
 
-			errorToast().should('not.exist');
+			workflowPage.getters.errorToast().should('not.exist');
 		});
 	});
 
@@ -65,7 +64,7 @@ describe('Import workflow', () => {
 			workflowPage.getters.workflowMenuItemImportFromFile().click();
 			workflowPage.getters
 				.workflowImportInput()
-				.selectFile('fixtures/Test_workflow-actions_paste-data.json', { force: true });
+				.selectFile('cypress/fixtures/Test_workflow-actions_paste-data.json', { force: true });
 			cy.waitForLoad(false);
 			workflowPage.actions.zoomToFit();
 			workflowPage.getters.canvasNodes().should('have.length', 5);

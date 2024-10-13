@@ -1,13 +1,13 @@
 import {
 	computed,
+	type MaybeRefOrGetter,
 	onBeforeUnmount,
-	onMounted,
 	ref,
+	watchEffect,
+	type Ref,
 	toValue,
 	watch,
-	watchEffect,
-	type MaybeRefOrGetter,
-	type Ref,
+	onMounted,
 } from 'vue';
 
 import { ensureSyntaxTree } from '@codemirror/language';
@@ -19,8 +19,6 @@ import { useNDVStore } from '@/stores/ndv.store';
 
 import type { TargetItem } from '@/Interface';
 import { useWorkflowHelpers } from '@/composables/useWorkflowHelpers';
-import { highlighter } from '@/plugins/codemirror/resolvableHighlighter';
-import { closeCursorInfoBox } from '@/plugins/codemirror/tooltips/InfoBoxTooltip';
 import type { Html, Plaintext, RawSegment, Resolvable, Segment } from '@/types/expressions';
 import {
 	getExpressionErrorMessage,
@@ -30,15 +28,16 @@ import {
 import { closeCompletion, completionStatus } from '@codemirror/autocomplete';
 import {
 	Compartment,
-	EditorSelection,
 	EditorState,
-	type Extension,
 	type SelectionRange,
+	type Extension,
+	EditorSelection,
 } from '@codemirror/state';
 import { EditorView, type ViewUpdate } from '@codemirror/view';
 import { debounce, isEqual } from 'lodash-es';
 import { useRouter } from 'vue-router';
 import { useI18n } from '../composables/useI18n';
+import { highlighter } from '../plugins/codemirror/resolvableHighlighter';
 import { useWorkflowsStore } from '../stores/workflows.store';
 import { useAutocompleteTelemetry } from './useAutocompleteTelemetry';
 
@@ -72,7 +71,6 @@ export const useExpressionEditor = ({
 	const readOnlyExtensions = ref<Compartment>(new Compartment());
 	const telemetryExtensions = ref<Compartment>(new Compartment());
 	const autocompleteStatus = ref<'pending' | 'active' | null>(null);
-	const dragging = ref(false);
 
 	const updateSegments = (): void => {
 		const state = editor.value?.state;
@@ -165,15 +163,13 @@ export const useExpressionEditor = ({
 		if (editor.value) {
 			editor.value.contentDOM.blur();
 			closeCompletion(editor.value);
-			closeCursorInfoBox(editor.value);
 		}
 	}
 
 	function blurOnClickOutside(event: MouseEvent) {
-		if (event.target && !dragging.value && !editor.value?.dom.contains(event.target as Node)) {
+		if (event.target && !editor.value?.dom.contains(event.target as Node)) {
 			blur();
 		}
-		dragging.value = false;
 	}
 
 	watch(editorRef, () => {
@@ -185,7 +181,10 @@ export const useExpressionEditor = ({
 			doc: toValue(editorValue),
 			extensions: [
 				customExtensions.value.of(toValue(extensions)),
-				readOnlyExtensions.value.of([EditorState.readOnly.of(toValue(isReadOnly))]),
+				readOnlyExtensions.value.of([
+					EditorState.readOnly.of(toValue(isReadOnly)),
+					EditorView.editable.of(!toValue(isReadOnly)),
+				]),
 				telemetryExtensions.value.of([]),
 				EditorView.updateListener.of(onEditorUpdate),
 				EditorView.focusChangeEffect.of((_, newHasFocus) => {
@@ -198,11 +197,6 @@ export const useExpressionEditor = ({
 					return null;
 				}),
 				EditorView.contentAttributes.of({ 'data-gramm': 'false' }), // disable grammarly
-				EditorView.domEventHandlers({
-					mousedown: () => {
-						dragging.value = true;
-					},
-				}),
 			],
 		});
 
@@ -226,6 +220,7 @@ export const useExpressionEditor = ({
 			editor.value.dispatch({
 				effects: readOnlyExtensions.value.reconfigure([
 					EditorState.readOnly.of(toValue(isReadOnly)),
+					EditorView.editable.of(!toValue(isReadOnly)),
 				]),
 			});
 		}
@@ -293,13 +288,14 @@ export const useExpressionEditor = ({
 				// e.g. credential modal
 				result.resolved = Expression.resolveWithoutWorkflow(resolvable, toValue(additionalData));
 			} else {
-				let opts: Record<string, unknown> = { additionalKeys: toValue(additionalData) };
+				let opts;
 				if (ndvStore.isInputParentOfActiveNode) {
 					opts = {
 						targetItem: target ?? undefined,
 						inputNodeName: ndvStore.ndvInputNodeName,
 						inputRunIndex: ndvStore.ndvInputRunIndex,
 						inputBranchIndex: ndvStore.ndvInputBranchIndex,
+						additionalKeys: toValue(additionalData),
 					};
 				}
 				result.resolved = workflowHelpers.resolveExpression('=' + resolvable, undefined, opts);
@@ -326,10 +322,29 @@ export const useExpressionEditor = ({
 			result.error = true;
 		}
 
+		if (typeof result.resolved === 'number' && isNaN(result.resolved)) {
+			result.resolved = i18n.baseText('expressionModalInput.null');
+		}
+
 		return result;
 	}
 
-	const targetItem = computed<TargetItem | null>(() => ndvStore.expressionTargetItem);
+	const targetItem = computed<TargetItem | null>(() => {
+		if (ndvStore.hoveringItem) {
+			return ndvStore.hoveringItem;
+		}
+
+		if (ndvStore.expressionOutputItemIndex && ndvStore.ndvInputNodeName) {
+			return {
+				nodeName: ndvStore.ndvInputNodeName,
+				runIndex: ndvStore.ndvInputRunIndex ?? 0,
+				outputIndex: ndvStore.ndvInputBranchIndex ?? 0,
+				itemIndex: ndvStore.expressionOutputItemIndex,
+			};
+		}
+
+		return null;
+	});
 
 	const resolvableSegments = computed<Resolvable[]>(() => {
 		return segments.value.filter((s): s is Resolvable => s.kind === 'resolvable');
@@ -405,8 +420,7 @@ export const useExpressionEditor = ({
 		if (pos === 'lastExpression') {
 			const END_OF_EXPRESSION = ' }}';
 			const endOfLastExpression = readEditorValue().lastIndexOf(END_OF_EXPRESSION);
-			pos =
-				endOfLastExpression !== -1 ? endOfLastExpression : (editor.value?.state.doc.length ?? 0);
+			pos = endOfLastExpression !== -1 ? endOfLastExpression : editor.value?.state.doc.length ?? 0;
 		} else if (pos === 'end') {
 			pos = editor.value?.state.doc.length ?? 0;
 		}
@@ -415,7 +429,7 @@ export const useExpressionEditor = ({
 
 	function select(anchor: number, head: number | 'end' = 'end'): void {
 		editor.value?.dispatch({
-			selection: { anchor, head: head === 'end' ? (editor.value?.state.doc.length ?? 0) : head },
+			selection: { anchor, head: head === 'end' ? editor.value?.state.doc.length ?? 0 : head },
 		});
 	}
 

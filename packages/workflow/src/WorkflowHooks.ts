@@ -39,9 +39,8 @@ export class WorkflowHooks {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async executeHookFunctions(hookName: string, parameters: any[]) {
-		const hooks = this.hookFunctions[hookName];
-		if (hooks !== undefined && Array.isArray(hooks)) {
-			for (const hookFunction of hooks) {
+		if (this.hookFunctions[hookName] !== undefined && Array.isArray(this.hookFunctions[hookName])) {
+			for (const hookFunction of this.hookFunctions[hookName]!) {
 				await hookFunction.apply(this, parameters);
 			}
 		}

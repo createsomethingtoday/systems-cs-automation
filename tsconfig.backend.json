@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
-		"types": ["node", "jest"]
+		"types": ["node", "jest"],
+		"noEmit": true
 	}
 }

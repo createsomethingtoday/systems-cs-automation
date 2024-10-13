@@ -1,35 +1,40 @@
-import { RoleChangeRequestDto, SettingsUpdateRequestDto } from '@n8n/api-types';
-import { Response } from 'express';
+import { plainToInstance } from 'class-transformer';
 
 import { AuthService } from '@/auth/auth.service';
-import { CredentialsService } from '@/credentials/credentials.service';
-import { AuthIdentity } from '@/databases/entities/auth-identity';
-import { Project } from '@/databases/entities/project';
-import { User } from '@/databases/entities/user';
-import { ProjectRepository } from '@/databases/repositories/project.repository';
-import { SharedCredentialsRepository } from '@/databases/repositories/shared-credentials.repository';
-import { SharedWorkflowRepository } from '@/databases/repositories/shared-workflow.repository';
-import { UserRepository } from '@/databases/repositories/user.repository';
-import { GlobalScope, Delete, Get, RestController, Patch, Licensed, Body } from '@/decorators';
-import { Param } from '@/decorators/args';
-import { BadRequestError } from '@/errors/response-errors/bad-request.error';
+import { User } from '@db/entities/User';
+import { GlobalScope, Delete, Get, RestController, Patch, Licensed } from '@/decorators';
+import {
+	ListQuery,
+	UserRequest,
+	UserRoleChangePayload,
+	UserSettingsUpdatePayload,
+} from '@/requests';
+import type { PublicUser, ITelemetryUserDeletionData } from '@/Interfaces';
+import { AuthIdentity } from '@db/entities/AuthIdentity';
+import { SharedCredentialsRepository } from '@db/repositories/sharedCredentials.repository';
+import { SharedWorkflowRepository } from '@db/repositories/sharedWorkflow.repository';
+import { UserRepository } from '@db/repositories/user.repository';
+import { UserService } from '@/services/user.service';
+import { listQueryMiddleware } from '@/middlewares';
+import { Logger } from '@/Logger';
 import { ForbiddenError } from '@/errors/response-errors/forbidden.error';
 import { NotFoundError } from '@/errors/response-errors/not-found.error';
-import { EventService } from '@/events/event.service';
-import { ExternalHooks } from '@/external-hooks';
-import type { PublicUser } from '@/interfaces';
-import { Logger } from '@/logging/logger.service';
-import { listQueryMiddleware } from '@/middlewares';
-import { AuthenticatedRequest, ListQuery, UserRequest } from '@/requests';
-import { ProjectService } from '@/services/project.service';
-import { UserService } from '@/services/user.service';
+import { BadRequestError } from '@/errors/response-errors/bad-request.error';
+import { ExternalHooks } from '@/ExternalHooks';
+import { InternalHooks } from '@/InternalHooks';
+import { validateEntity } from '@/GenericHelpers';
+import { ProjectRepository } from '@/databases/repositories/project.repository';
+import { Project } from '@/databases/entities/Project';
 import { WorkflowService } from '@/workflows/workflow.service';
+import { CredentialsService } from '@/credentials/credentials.service';
+import { ProjectService } from '@/services/project.service';
 
 @RestController('/users')
 export class UsersController {
 	constructor(
 		private readonly logger: Logger,
 		private readonly externalHooks: ExternalHooks,
+		private readonly internalHooks: InternalHooks,
 		private readonly sharedCredentialsRepository: SharedCredentialsRepository,
 		private readonly sharedWorkflowRepository: SharedWorkflowRepository,
 		private readonly userRepository: UserRepository,
@@ -39,7 +44,6 @@ export class UsersController {
 		private readonly workflowService: WorkflowService,
 		private readonly credentialsService: CredentialsService,
 		private readonly projectService: ProjectService,
-		private readonly eventService: EventService,
 	) {}
 
 	static ERROR_MESSAGES = {
@@ -73,6 +77,7 @@ export class UsersController {
 				delete user.isOwner;
 				delete user.isPending;
 				delete user.signInType;
+				delete user.hasRecoveryCodesLeft;
 			}
 		}
 
@@ -120,12 +125,13 @@ export class UsersController {
 
 	@Patch('/:id/settings')
 	@GlobalScope('user:update')
-	async updateUserSettings(
-		_req: AuthenticatedRequest,
-		_res: Response,
-		@Body payload: SettingsUpdateRequestDto,
-		@Param('id') id: string,
-	) {
+	async updateUserSettings(req: UserRequest.UserSettingsUpdate) {
+		const payload = plainToInstance(UserSettingsUpdatePayload, req.body, {
+			excludeExtraneousValues: true,
+		});
+
+		const id = req.params.id;
+
 		await this.userService.updateSettings(id, payload);
 
 		const user = await this.userRepository.findOneOrFail({
@@ -176,7 +182,12 @@ export class UsersController {
 			);
 		}
 
-		let transfereeId;
+		const telemetryData: ITelemetryUserDeletionData = {
+			user_id: req.user.id,
+			target_user_old_status: userToDelete.isPending ? 'invited' : 'active',
+			target_user_id: idToDelete,
+			migration_strategy: transferId ? 'transfer_data' : 'delete_data',
+		};
 
 		if (transferId) {
 			const transfereePersonalProject = await this.projectRepository.findOneBy({ id: transferId });
@@ -194,7 +205,7 @@ export class UsersController {
 				},
 			});
 
-			transfereeId = transferee.id;
+			telemetryData.migration_user_id = transferee.id;
 
 			await this.userService.getManager().transaction(async (trx) => {
 				await this.workflowService.transferAll(
@@ -241,13 +252,10 @@ export class UsersController {
 			await trx.delete(User, { id: userToDelete.id });
 		});
 
-		this.eventService.emit('user-deleted', {
+		void this.internalHooks.onUserDeletion({
 			user: req.user,
+			telemetryData,
 			publicApi: false,
-			targetUserOldStatus: userToDelete.isPending ? 'invited' : 'active',
-			targetUserId: idToDelete,
-			migrationStrategy: transferId ? 'transfer_data' : 'delete_data',
-			migrationUserId: transfereeId,
 		});
 
 		await this.externalHooks.run('user.deleted', [await this.userService.toPublic(userToDelete)]);
@@ -258,16 +266,18 @@ export class UsersController {
 	@Patch('/:id/role')
 	@GlobalScope('user:changeRole')
 	@Licensed('feat:advancedPermissions')
-	async changeGlobalRole(
-		req: AuthenticatedRequest,
-		_: Response,
-		@Body payload: RoleChangeRequestDto,
-		@Param('id') id: string,
-	) {
+	async changeGlobalRole(req: UserRequest.ChangeRole) {
 		const { NO_ADMIN_ON_OWNER, NO_USER, NO_OWNER_ON_OWNER } =
 			UsersController.ERROR_MESSAGES.CHANGE_ROLE;
 
-		const targetUser = await this.userRepository.findOneBy({ id });
+		const payload = plainToInstance(UserRoleChangePayload, req.body, {
+			excludeExtraneousValues: true,
+		});
+		await validateEntity(payload);
+
+		const targetUser = await this.userRepository.findOne({
+			where: { id: req.params.id },
+		});
 		if (targetUser === null) {
 			throw new NotFoundError(NO_USER);
 		}
@@ -282,11 +292,11 @@ export class UsersController {
 
 		await this.userService.update(targetUser.id, { role: payload.newRoleName });
 
-		this.eventService.emit('user-changed-role', {
-			userId: req.user.id,
-			targetUserId: targetUser.id,
-			targetUserNewRole: payload.newRoleName,
-			publicApi: false,
+		void this.internalHooks.onUserRoleChange({
+			user: req.user,
+			target_user_id: targetUser.id,
+			target_user_new_role: ['global', payload.newRoleName].join(' '),
+			public_api: false,
 		});
 
 		const projects = await this.projectService.getUserOwnedOrAdminProjects(targetUser.id);

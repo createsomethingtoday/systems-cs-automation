@@ -1,10 +1,9 @@
-import { ApplicationError, ErrorReporterProxy } from 'n8n-workflow';
-import { Service } from 'typedi';
 import type WebSocket from 'ws';
-
-import type { User } from '@/databases/entities/user';
-
+import { Service } from 'typedi';
+import { Logger } from '@/Logger';
 import { AbstractPush } from './abstract.push';
+import type { User } from '@db/entities/User';
+import { OrchestrationService } from '@/services/orchestration.service';
 
 function heartbeat(this: WebSocket) {
 	this.isAlive = true;
@@ -12,6 +11,13 @@ function heartbeat(this: WebSocket) {
 
 @Service()
 export class WebSocketPush extends AbstractPush<WebSocket> {
+	constructor(logger: Logger, orchestrationService: OrchestrationService) {
+		super(logger, orchestrationService);
+
+		// Ping all connected clients every 60 seconds
+		setInterval(() => this.pingAll(), 60 * 1000);
+	}
+
 	add(pushRef: string, userId: User['id'], connection: WebSocket) {
 		connection.isAlive = true;
 		connection.on('pong', heartbeat);
@@ -24,15 +30,6 @@ export class WebSocketPush extends AbstractPush<WebSocket> {
 
 				this.onMessageReceived(pushRef, JSON.parse(buffer.toString('utf8')));
 			} catch (error) {
-				ErrorReporterProxy.error(
-					new ApplicationError('Error parsing push message', {
-						extra: {
-							userId,
-							data,
-						},
-						cause: error,
-					}),
-				);
 				this.logger.error("Couldn't parse message from editor-UI", {
 					error: error as unknown,
 					pushRef,
@@ -59,12 +56,17 @@ export class WebSocketPush extends AbstractPush<WebSocket> {
 		connection.send(data);
 	}
 
-	protected ping(connection: WebSocket): void {
-		// If a connection did not respond with a `PONG` in the last 60 seconds, disconnect
-		if (!connection.isAlive) {
-			return connection.terminate();
+	private pingAll() {
+		for (const pushRef in this.connections) {
+			const connection = this.connections[pushRef];
+			// If a connection did not respond with a `PONG` in the last 60 seconds, disconnect
+			if (!connection.isAlive) {
+				delete this.connections[pushRef];
+				return connection.terminate();
+			}
+
+			connection.isAlive = false;
+			connection.ping();
 		}
-		connection.isAlive = false;
-		connection.ping();
 	}
 }

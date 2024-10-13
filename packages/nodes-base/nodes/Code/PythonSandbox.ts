@@ -18,6 +18,7 @@ export class PythonSandbox extends Sandbox {
 	constructor(
 		context: SandboxContext,
 		private pythonCode: string,
+		itemIndex: number | undefined,
 		helpers: IExecuteFunctions['helpers'],
 	) {
 		super(
@@ -27,6 +28,7 @@ export class PythonSandbox extends Sandbox {
 					plural: 'dictionaries',
 				},
 			},
+			itemIndex,
 			helpers,
 		);
 		// Since python doesn't allow variable names starting with `$`,
@@ -37,8 +39,8 @@ export class PythonSandbox extends Sandbox {
 		}, {} as PythonSandboxContext);
 	}
 
-	async runCode<T = unknown>(): Promise<T> {
-		return await this.runCodeInPython<T>();
+	async runCode(): Promise<unknown> {
+		return await this.runCodeInPython<unknown>();
 	}
 
 	async runCodeAllItems() {
@@ -46,9 +48,9 @@ export class PythonSandbox extends Sandbox {
 		return this.validateRunCodeAllItems(executionResult);
 	}
 
-	async runCodeEachItem(itemIndex: number) {
+	async runCodeEachItem() {
 		const executionResult = await this.runCodeInPython<INodeExecutionData>();
-		return this.validateRunCodeEachItem(executionResult, itemIndex);
+		return this.validateRunCodeEachItem(executionResult);
 	}
 
 	private async runCodeInPython<T>() {

@@ -1,5 +1,4 @@
 import type { IDataObject, INode, INodeType } from 'n8n-workflow';
-
 import { validateValueAgainstSchema } from '@/NodeExecuteFunctions';
 
 describe('Validation', () => {

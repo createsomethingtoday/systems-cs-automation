@@ -1,31 +1,31 @@
-import type { Scope } from '@n8n/permissions';
-import type { INode, IPinData } from 'n8n-workflow';
 import Container from 'typedi';
+import type { SuperAgentTest } from 'supertest';
 import { v4 as uuid } from 'uuid';
+import type { INode, IPinData } from 'n8n-workflow';
 
-import { ActiveWorkflowManager } from '@/active-workflow-manager';
-import type { User } from '@/databases/entities/user';
-import type { WorkflowEntity } from '@/databases/entities/workflow-entity';
-import { ProjectRepository } from '@/databases/repositories/project.repository';
-import { SharedWorkflowRepository } from '@/databases/repositories/shared-workflow.repository';
-import { WorkflowHistoryRepository } from '@/databases/repositories/workflow-history.repository';
-import { WorkflowRepository } from '@/databases/repositories/workflow.repository';
-import { License } from '@/license';
+import type { User } from '@db/entities/User';
+import { WorkflowRepository } from '@db/repositories/workflow.repository';
+import type { WorkflowEntity } from '@db/entities/WorkflowEntity';
 import type { ListQuery } from '@/requests';
-import { ProjectService } from '@/services/project.service';
+import { WorkflowHistoryRepository } from '@db/repositories/workflowHistory.repository';
+import { ActiveWorkflowManager } from '@/ActiveWorkflowManager';
 import { EnterpriseWorkflowService } from '@/workflows/workflow.service.ee';
 
 import { mockInstance } from '../../shared/mocking';
+import * as utils from '../shared/utils/';
+import * as testDb from '../shared/testDb';
+import { makeWorkflow, MOCK_PINDATA } from '../shared/utils/';
+import { randomCredentialPayload } from '../shared/random';
 import { saveCredential } from '../shared/db/credentials';
-import { createTeamProject, linkUserToProject } from '../shared/db/projects';
-import { createTag } from '../shared/db/tags';
 import { createManyUsers, createMember, createOwner } from '../shared/db/users';
 import { createWorkflow, shareWorkflowWithProjects } from '../shared/db/workflows';
-import { randomCredentialPayload } from '../shared/random';
-import * as testDb from '../shared/test-db';
-import type { SuperAgentTest } from '../shared/types';
-import * as utils from '../shared/utils/';
-import { makeWorkflow, MOCK_PINDATA } from '../shared/utils/';
+import { createTag } from '../shared/db/tags';
+import { License } from '@/License';
+import { SharedWorkflowRepository } from '@/databases/repositories/sharedWorkflow.repository';
+import { ProjectRepository } from '@/databases/repositories/project.repository';
+import { ProjectService } from '@/services/project.service';
+import { createTeamProject, linkUserToProject } from '../shared/db/projects';
+import type { Scope } from '@n8n/permissions';
 
 let owner: User;
 let member: User;
@@ -116,7 +116,6 @@ describe('POST /workflows', () => {
 			[
 				'workflow:delete',
 				'workflow:execute',
-				'workflow:move',
 				'workflow:read',
 				'workflow:share',
 				'workflow:update',
@@ -360,7 +359,7 @@ describe('POST /workflows', () => {
 	});
 });
 
-describe('GET /workflows/:workflowId', () => {
+describe('GET /workflows/:id', () => {
 	test('should return pin data', async () => {
 		const workflow = makeWorkflow({ withPinData: true });
 		const workflowCreationResponse = await authOwnerAgent.post('/workflows').send(workflow);
@@ -520,13 +519,7 @@ describe('GET /workflows', () => {
 			// Team workflow
 			expect(wf1.id).toBe(savedWorkflow1.id);
 			expect(wf1.scopes).toEqual(
-				[
-					'workflow:delete',
-					'workflow:execute',
-					'workflow:move',
-					'workflow:read',
-					'workflow:update',
-				].sort(),
+				['workflow:read', 'workflow:update', 'workflow:delete', 'workflow:execute'].sort(),
 			);
 
 			// Shared workflow
@@ -557,12 +550,11 @@ describe('GET /workflows', () => {
 			expect(wf2.id).toBe(savedWorkflow2.id);
 			expect(wf2.scopes).toEqual(
 				[
+					'workflow:read',
+					'workflow:update',
 					'workflow:delete',
 					'workflow:execute',
-					'workflow:move',
-					'workflow:read',
 					'workflow:share',
-					'workflow:update',
 				].sort(),
 			);
 		}
@@ -582,13 +574,12 @@ describe('GET /workflows', () => {
 			expect(wf1.scopes).toEqual(
 				[
 					'workflow:create',
-					'workflow:delete',
-					'workflow:execute',
-					'workflow:list',
-					'workflow:move',
 					'workflow:read',
-					'workflow:share',
 					'workflow:update',
+					'workflow:delete',
+					'workflow:list',
+					'workflow:share',
+					'workflow:execute',
 				].sort(),
 			);
 
@@ -597,13 +588,12 @@ describe('GET /workflows', () => {
 			expect(wf2.scopes).toEqual(
 				[
 					'workflow:create',
-					'workflow:delete',
-					'workflow:execute',
-					'workflow:list',
-					'workflow:move',
 					'workflow:read',
-					'workflow:share',
 					'workflow:update',
+					'workflow:delete',
+					'workflow:list',
+					'workflow:share',
+					'workflow:execute',
 				].sort(),
 			);
 		}
@@ -833,7 +823,7 @@ describe('GET /workflows', () => {
 	});
 });
 
-describe('PATCH /workflows/:workflowId', () => {
+describe('PATCH /workflows/:id', () => {
 	test('should create workflow history version when licensed', async () => {
 		license.enable('feat:workflowHistory');
 		const workflow = await createWorkflow({}, owner);
@@ -1007,7 +997,7 @@ describe('PATCH /workflows/:workflowId', () => {
 	});
 });
 
-describe('POST /workflows/:workflowId/run', () => {
+describe('POST /workflows/run', () => {
 	let sharingSpy: jest.SpyInstance;
 	let tamperingSpy: jest.SpyInstance;
 	let workflow: WorkflowEntity;
@@ -1038,7 +1028,7 @@ describe('POST /workflows/:workflowId/run', () => {
 	});
 });
 
-describe('DELETE /workflows/:workflowId', () => {
+describe('DELETE /workflows/:id', () => {
 	test('deletes a workflow owned by the user', async () => {
 		const workflow = await createWorkflow({}, owner);
 

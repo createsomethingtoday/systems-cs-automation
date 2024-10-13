@@ -5,7 +5,7 @@ import { pipeline } from 'stream/promises';
 import { file as tmpFile } from 'tmp-promise';
 import ftpClient from 'promise-ftp';
 import sftpClient from 'ssh2-sftp-client';
-import { BINARY_ENCODING, NodeApiError, NodeConnectionType } from 'n8n-workflow';
+import { BINARY_ENCODING, NodeApiError } from 'n8n-workflow';
 import type {
 	ICredentialDataDecryptedObject,
 	ICredentialsDecrypted,
@@ -113,7 +113,6 @@ export class Ftp implements INodeType {
 		displayName: 'FTP',
 		name: 'ftp',
 		icon: 'fa:server',
-		iconColor: 'dark-blue',
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["protocol"] + ": " + $parameter["operation"]}}',
@@ -122,8 +121,8 @@ export class Ftp implements INodeType {
 			name: 'FTP',
 			color: '#303050',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				// nodelinter-ignore-next-line
@@ -228,7 +227,7 @@ export class Ftp implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				displayOptions: {
 					show: {
 						operation: ['delete'],
@@ -510,9 +509,9 @@ export class Ftp implements INodeType {
 		const protocol = this.getNodeParameter('protocol', 0) as string;
 
 		if (protocol === 'sftp') {
-			credentials = await this.getCredentials<ICredentialDataDecryptedObject>('sftp');
+			credentials = await this.getCredentials('sftp');
 		} else {
-			credentials = await this.getCredentials<ICredentialDataDecryptedObject>('ftp');
+			credentials = await this.getCredentials('ftp');
 		}
 		let ftp: ftpClient;
 		let sftp: sftpClient;

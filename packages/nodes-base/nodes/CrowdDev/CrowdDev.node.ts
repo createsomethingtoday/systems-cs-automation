@@ -1,12 +1,11 @@
 import type { INodeType, INodeTypeDescription } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 import { allProperties } from './descriptions';
 
 export class CrowdDev implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'crowd.dev',
 		name: 'crowdDev',
-		icon: { light: 'file:crowdDev.svg', dark: 'file:crowdDev.dark.svg' },
+		icon: 'file:crowdDev.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
@@ -15,8 +14,8 @@ export class CrowdDev implements INodeType {
 		defaults: {
 			name: 'crowd.dev',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'crowdDevApi',

@@ -1,6 +1,5 @@
 import { action } from '@storybook/addon-actions';
 import type { StoryFn } from '@storybook/vue3';
-
 import N8nColorPicker from './ColorPicker.vue';
 
 export default {
@@ -12,7 +11,7 @@ export default {
 		},
 		size: {
 			control: 'select',
-			options: ['small', 'large'],
+			options: ['mini', 'small', 'medium', 'large'],
 		},
 		showAlpha: {
 			control: 'boolean',
@@ -53,7 +52,7 @@ const DefaultTemplate: StoryFn = (args, { argTypes }) => ({
 export const Default = DefaultTemplate.bind({});
 Default.args = {
 	disabled: false,
-	size: 'small',
+	size: 'medium',
 	showAlpha: false,
 	colorFormat: '',
 	popperClass: '',

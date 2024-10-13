@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { mailCheckApiRequest } from './GenericFunctions';
 
@@ -21,8 +20,8 @@ export class Mailcheck implements INodeType {
 		defaults: {
 			name: 'Mailcheck',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'mailcheckApi',

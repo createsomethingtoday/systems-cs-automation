@@ -11,9 +11,9 @@ import get from 'lodash/get';
 import isEqual from 'lodash/isEqual';
 import lt from 'lodash/lt';
 
-import { sortByCode } from '../../helpers/utils';
+import { shuffleArray, sortByCode } from '../../helpers/utils';
 import { disableDotNotationBoolean } from '../common.descriptions';
-import { shuffleArray, updateDisplayOptions } from '@utils/utilities';
+import { updateDisplayOptions } from '@utils/utilities';
 
 const properties: INodeProperties[] = [
 	{

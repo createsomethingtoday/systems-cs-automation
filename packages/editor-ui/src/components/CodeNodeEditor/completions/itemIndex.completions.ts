@@ -1,10 +1,8 @@
-import { useI18n } from '@/composables/useI18n';
-import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
-import type { CodeExecutionMode } from 'n8n-workflow';
-import { toValue, type MaybeRefOrGetter } from 'vue';
 import { escape } from '../utils';
+import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { useI18n } from '@/composables/useI18n';
 
-export function useItemIndexCompletions(mode: MaybeRefOrGetter<CodeExecutionMode>) {
+export function useItemIndexCompletions(mode: 'runOnceForEachItem' | 'runOnceForAllItems') {
 	const i18n = useI18n();
 	/**
 	 * - Complete `$input.` to `.first() .last() .all() .itemMatching()` in all-items mode.
@@ -22,7 +20,7 @@ export function useItemIndexCompletions(mode: MaybeRefOrGetter<CodeExecutionMode
 
 		const options: Completion[] = [];
 
-		if (toValue(mode) === 'runOnceForAllItems') {
+		if (mode === 'runOnceForAllItems') {
 			options.push(
 				{
 					label: `${matcher}.first()`,
@@ -47,7 +45,7 @@ export function useItemIndexCompletions(mode: MaybeRefOrGetter<CodeExecutionMode
 			);
 		}
 
-		if (toValue(mode) === 'runOnceForEachItem') {
+		if (mode === 'runOnceForEachItem') {
 			options.push({
 				label: `${matcher}.item`,
 				type: 'variable',
@@ -99,7 +97,7 @@ export function useItemIndexCompletions(mode: MaybeRefOrGetter<CodeExecutionMode
 			},
 		];
 
-		if (toValue(mode) === 'runOnceForAllItems') {
+		if (mode === 'runOnceForAllItems') {
 			options.push(
 				{
 					label: `${replacementBase}.first()`,
@@ -124,7 +122,7 @@ export function useItemIndexCompletions(mode: MaybeRefOrGetter<CodeExecutionMode
 			);
 		}
 
-		if (toValue(mode) === 'runOnceForEachItem') {
+		if (mode === 'runOnceForEachItem') {
 			options.push({
 				label: `${replacementBase}.item`,
 				type: 'variable',

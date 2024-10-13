@@ -14,22 +14,22 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { ApplicationError, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { ApplicationError, NodeOperationError } from 'n8n-workflow';
 import { generatePairedItemData } from '../../utils/utilities';
 
 export class Kafka implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Kafka',
 		name: 'kafka',
-		icon: { light: 'file:kafka.svg', dark: 'file:kafka.dark.svg' },
+		icon: 'file:kafka.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Sends messages to a Kafka topic',
 		defaults: {
 			name: 'Kafka',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'kafka',
@@ -178,7 +178,7 @@ export class Kafka implements INodeType {
 				name: 'options',
 				type: 'collection',
 				default: {},
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				options: [
 					{
 						displayName: 'Acks',

@@ -1,17 +1,14 @@
 import * as workflowHelpers from '@/composables/useWorkflowHelpers';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 import { createTestingPinia } from '@pinia/testing';
-import { waitFor, fireEvent } from '@testing-library/vue';
+import { waitFor } from '@testing-library/vue';
 import { setActivePinia } from 'pinia';
 import { beforeEach, describe, vi } from 'vitest';
-import { defineComponent, h, ref, toValue } from 'vue';
-import { n8nLang } from '@/plugins/codemirror/n8nLang';
+import { ref, toValue } from 'vue';
+import { n8nLang } from '../../plugins/codemirror/n8nLang';
 import { useExpressionEditor } from '../useExpressionEditor';
 import { useRouter } from 'vue-router';
 import { EditorSelection } from '@codemirror/state';
-import userEvent from '@testing-library/user-event';
-import { renderComponent } from '@/__tests__/render';
-import { tabKeyMap } from '@/plugins/codemirror/keymap';
 
 vi.mock('@/composables/useAutocompleteTelemetry', () => ({
 	useAutocompleteTelemetry: vi.fn(),
@@ -34,26 +31,6 @@ describe('useExpressionEditor', () => {
 		return mock;
 	};
 
-	const renderExpressionEditor = async (
-		options: Omit<Parameters<typeof useExpressionEditor>[0], 'editorRef'> = {},
-	) => {
-		let expressionEditor!: ReturnType<typeof useExpressionEditor>;
-		const renderResult = renderComponent(
-			defineComponent({
-				setup() {
-					const root = ref<HTMLElement>();
-					expressionEditor = useExpressionEditor({ ...options, editorRef: root });
-
-					return () => h('div', { ref: root, 'data-test-id': 'editor-root' });
-				},
-			}),
-			{ props: { options } },
-		);
-		expect(renderResult.getByTestId('editor-root')).toBeInTheDocument();
-		await waitFor(() => toValue(expressionEditor.editor));
-		return { renderResult, expressionEditor };
-	};
-
 	beforeEach(() => {
 		setActivePinia(createTestingPinia());
 	});
@@ -63,20 +40,26 @@ describe('useExpressionEditor', () => {
 	});
 
 	test('should create an editor', async () => {
-		const { expressionEditor } = await renderExpressionEditor();
+		const root = ref<HTMLElement>();
+		const { editor } = useExpressionEditor({
+			editorRef: root,
+		});
 
-		await waitFor(() => expect(toValue(expressionEditor.editor)).toBeInstanceOf(EditorView));
+		root.value = document.createElement('div');
+
+		await waitFor(() => expect(toValue(editor)).toBeInstanceOf(EditorView));
 	});
 
 	test('should calculate segments', async () => {
 		mockResolveExpression().mockReturnValueOnce(15);
-
-		const {
-			expressionEditor: { segments },
-		} = await renderExpressionEditor({
+		const root = ref<HTMLElement>();
+		const { segments } = useExpressionEditor({
+			editorRef: root,
 			editorValue: 'before {{ $json.test.length }} after',
 			extensions: [n8nLang()],
 		});
+
+		root.value = document.createElement('div');
 
 		await waitFor(() => {
 			expect(toValue(segments.all)).toEqual([
@@ -135,152 +118,134 @@ describe('useExpressionEditor', () => {
 	describe('readEditorValue()', () => {
 		test('should return the full editor value (unresolved)', async () => {
 			mockResolveExpression().mockReturnValueOnce(15);
-			const {
-				expressionEditor: { readEditorValue },
-			} = await renderExpressionEditor({
+			const root = ref<HTMLElement>();
+			const { readEditorValue } = useExpressionEditor({
+				editorRef: root,
 				editorValue: 'before {{ $json.test.length }} after',
 				extensions: [n8nLang()],
 			});
 
-			expect(readEditorValue()).toEqual('before {{ $json.test.length }} after');
+			root.value = document.createElement('div');
+
+			await waitFor(() =>
+				expect(readEditorValue()).toEqual('before {{ $json.test.length }} after'),
+			);
 		});
 	});
 
 	describe('setCursorPosition()', () => {
 		test('should set cursor position to number correctly', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text here';
-			const {
-				expressionEditor: { editor, setCursorPosition },
-			} = await renderExpressionEditor({
+			const { editor, setCursorPosition } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
+				extensions: [],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			setCursorPosition(4);
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4));
+
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4)),
+			);
 		});
 
 		test('should set cursor position to end correctly', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text here';
 			const correctPosition = editorValue.length;
-			const {
-				expressionEditor: { editor, setCursorPosition },
-			} = await renderExpressionEditor({
+			const { editor, setCursorPosition } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
+				extensions: [],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			setCursorPosition('end');
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(correctPosition));
+
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(correctPosition)),
+			);
 		});
 
 		test('should set cursor position to last expression correctly', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text {{ $json.foo }} {{ $json.bar }} here';
 			const correctPosition = editorValue.indexOf('bar') + 'bar'.length;
-			const {
-				expressionEditor: { editor, setCursorPosition },
-			} = await renderExpressionEditor({
+			const { editor, setCursorPosition } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
 				extensions: [n8nLang()],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			setCursorPosition('lastExpression');
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(correctPosition));
+
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(correctPosition)),
+			);
 		});
 	});
 
 	describe('select()', () => {
 		test('should select number range', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text here';
-			const {
-				expressionEditor: { editor, select },
-			} = await renderExpressionEditor({
+			const { editor, select } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
+				extensions: [],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			select(4, 7);
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4, 7));
+
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4, 7)),
+			);
 		});
 
 		test('should select until end', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text here';
-			const {
-				expressionEditor: { editor, select },
-			} = await renderExpressionEditor({
+			const { editor, select } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
+				extensions: [],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			select(4, 'end');
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4, 9));
+
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(4, 9)),
+			);
 		});
 	});
 
 	describe('selectAll()', () => {
 		test('should select all', async () => {
+			const root = ref<HTMLElement>();
 			const editorValue = 'text here';
-			const {
-				expressionEditor: { editor, selectAll },
-			} = await renderExpressionEditor({
+			const { editor, selectAll } = useExpressionEditor({
+				editorRef: root,
 				editorValue,
+				extensions: [],
 			});
 
+			root.value = document.createElement('div');
+			await waitFor(() => toValue(editor));
 			selectAll();
-			expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(0, 9));
-		});
-	});
 
-	describe('blur on click outside', () => {
-		test('should blur when another element is clicked', async () => {
-			const { renderResult, expressionEditor } = await renderExpressionEditor();
-
-			const root = renderResult.getByTestId('editor-root');
-			const input = root.querySelector('.cm-line') as HTMLDivElement;
-
-			await userEvent.click(input);
-			expect(expressionEditor.editor.value?.hasFocus).toBe(true);
-
-			await fireEvent(document, new MouseEvent('click'));
-			expect(expressionEditor.editor.value?.hasFocus).toBe(false);
-		});
-
-		test('should NOT blur when another element is clicked while selecting', async () => {
-			const { renderResult, expressionEditor } = await renderExpressionEditor();
-
-			const root = renderResult.getByTestId('editor-root');
-			const input = root.querySelector('.cm-line') as HTMLDivElement;
-
-			await userEvent.click(input);
-			expect(expressionEditor.editor.value?.hasFocus).toBe(true);
-			await fireEvent(input, new MouseEvent('mousedown', { bubbles: true }));
-
-			await fireEvent(document, new MouseEvent('click'));
-			expect(expressionEditor.editor.value?.hasFocus).toBe(true);
-		});
-	});
-
-	describe('keymap', () => {
-		const TEST_EDITOR_VALUE = '{{ { "foo": "bar" } }}';
-
-		test('should indent on tab if blurOnTab is false', async () => {
-			const { renderResult, expressionEditor } = await renderExpressionEditor({
-				editorValue: TEST_EDITOR_VALUE,
-				extensions: [keymap.of([...tabKeyMap(false)])],
-			});
-			const root = renderResult.getByTestId('editor-root');
-			const input = root.querySelector('.cm-line') as HTMLDivElement;
-
-			await userEvent.type(input, '{tab}');
-			expect(expressionEditor.editor.value?.state.doc.toString()).toEqual(`  ${TEST_EDITOR_VALUE}`);
-		});
-
-		test('should NOT indent on tab if blurOnTab is true', async () => {
-			const { renderResult, expressionEditor } = await renderExpressionEditor({
-				editorValue: TEST_EDITOR_VALUE,
-				extensions: [keymap.of([...tabKeyMap(true)])],
-			});
-			const root = renderResult.getByTestId('editor-root');
-			const input = root.querySelector('.cm-line') as HTMLDivElement;
-
-			await userEvent.type(input, '{tab}');
-			expect(expressionEditor.editor.value?.state.doc.toString()).toEqual(TEST_EDITOR_VALUE);
+			await waitFor(() =>
+				expect(toValue(editor)?.state.selection).toEqual(EditorSelection.single(0, 9)),
+			);
 		});
 	});
 });

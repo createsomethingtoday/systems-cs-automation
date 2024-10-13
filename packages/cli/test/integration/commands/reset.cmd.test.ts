@@ -1,32 +1,39 @@
-import { Container } from 'typedi';
-
 import { Reset } from '@/commands/user-management/reset';
-import { CredentialsEntity } from '@/databases/entities/credentials-entity';
-import { CredentialsRepository } from '@/databases/repositories/credentials.repository';
-import { SettingsRepository } from '@/databases/repositories/settings.repository';
-import { SharedCredentialsRepository } from '@/databases/repositories/shared-credentials.repository';
-import { SharedWorkflowRepository } from '@/databases/repositories/shared-workflow.repository';
-import { UserRepository } from '@/databases/repositories/user.repository';
-import { LoadNodesAndCredentials } from '@/load-nodes-and-credentials';
-import { NodeTypes } from '@/node-types';
-import { setupTestCommand } from '@test-integration/utils/test-command';
+import { InternalHooks } from '@/InternalHooks';
+import { LoadNodesAndCredentials } from '@/LoadNodesAndCredentials';
+import { NodeTypes } from '@/NodeTypes';
+import Container from 'typedi';
+import { UserRepository } from '@db/repositories/user.repository';
 
 import { mockInstance } from '../../shared/mocking';
-import { encryptCredentialData, saveCredential } from '../shared/db/credentials';
-import { getPersonalProject } from '../shared/db/projects';
+import * as testDb from '../shared/testDb';
 import { createMember, createUser } from '../shared/db/users';
 import { createWorkflow } from '../shared/db/workflows';
+import { SharedWorkflowRepository } from '@/databases/repositories/sharedWorkflow.repository';
+import { getPersonalProject } from '../shared/db/projects';
+import { encryptCredentialData, saveCredential } from '../shared/db/credentials';
 import { randomCredentialPayload } from '../shared/random';
-import * as testDb from '../shared/test-db';
+import { SharedCredentialsRepository } from '@/databases/repositories/sharedCredentials.repository';
+import { CredentialsRepository } from '@/databases/repositories/credentials.repository';
+import { CredentialsEntity } from '@/databases/entities/CredentialsEntity';
+import { SettingsRepository } from '@/databases/repositories/settings.repository';
 
-mockInstance(LoadNodesAndCredentials);
-mockInstance(NodeTypes);
-const command = setupTestCommand(Reset);
+beforeAll(async () => {
+	mockInstance(InternalHooks);
+	mockInstance(LoadNodesAndCredentials);
+	mockInstance(NodeTypes);
+	await testDb.init();
+});
 
 beforeEach(async () => {
 	await testDb.truncate(['User']);
 });
 
+afterAll(async () => {
+	await testDb.terminate();
+});
+
+// eslint-disable-next-line n8n-local-rules/no-skipped-tests
 test('user-management:reset should reset DB to default user state', async () => {
 	//
 	// ARRANGE
@@ -58,7 +65,7 @@ test('user-management:reset should reset DB to default user state', async () => 
 	//
 	// ACT
 	//
-	await command.run();
+	await Reset.run();
 
 	//
 	// ASSERT

@@ -1,10 +1,8 @@
-import { DataSource, EntityManager, type EntityMetadata } from '@n8n/typeorm';
-import { mock } from 'jest-mock-extended';
-import type { Class } from 'n8n-core';
-import type { DeepPartial } from 'ts-essentials';
 import { Container } from 'typedi';
-
-import type { Logger } from '@/logging/logger.service';
+import { mock } from 'jest-mock-extended';
+import type { DeepPartial } from 'ts-essentials';
+import { DataSource, EntityManager, type EntityMetadata } from '@n8n/typeorm';
+import type { Class } from 'n8n-core';
 
 export const mockInstance = <T>(
 	serviceClass: Class<T>,
@@ -24,6 +22,3 @@ export const mockEntityManager = (entityClass: Class) => {
 	Object.assign(entityManager, { connection: dataSource });
 	return entityManager;
 };
-
-export const mockLogger = () =>
-	mock<Logger>({ withScope: jest.fn().mockReturnValue(mock<Logger>()) });

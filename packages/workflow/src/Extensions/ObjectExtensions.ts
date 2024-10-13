@@ -1,5 +1,5 @@
-import type { ExtensionMap } from './Extensions';
 import { ExpressionExtensionError } from '../errors/expression-extension.error';
+import type { ExtensionMap } from './Extensions';
 
 function isEmpty(value: object): boolean {
 	return Object.keys(value).length === 0;
@@ -110,8 +110,7 @@ export function toDateTime() {
 
 isEmpty.doc = {
 	name: 'isEmpty',
-	description:
-		'Returns <code>true</code> if the Object has no keys (fields) set or is <code>null</code>',
+	description: 'Returns <code>true</code> if the Object has no keys (fields) set',
 	examples: [
 		{ example: "({'name': 'Nathan'}).isEmpty()", evaluated: 'false' },
 		{ example: '({}).isEmpty()', evaluated: 'true' },

@@ -2,12 +2,8 @@ import Container from 'typedi';
 
 import { WorkflowRepository } from '@/databases/repositories/workflow.repository';
 
-import {
-	createWorkflowWithTrigger,
-	createWorkflow,
-	getAllWorkflows,
-} from '../../shared/db/workflows';
-import * as testDb from '../../shared/test-db';
+import * as testDb from '../../shared/testDb';
+import { createWorkflowWithTrigger, getAllWorkflows } from '../../shared/db/workflows';
 
 describe('WorkflowRepository', () => {
 	beforeAll(async () => {
@@ -69,29 +65,6 @@ describe('WorkflowRepository', () => {
 			//
 			const after = await getAllWorkflows();
 			expect(after).toMatchObject([{ active: false }, { active: false }]);
-		});
-	});
-
-	describe('getActiveIds', () => {
-		it('should return active workflow IDs', async () => {
-			//
-			// ARRANGE
-			//
-			const workflows = await Promise.all([
-				createWorkflow({ active: true }),
-				createWorkflow({ active: false }),
-				createWorkflow({ active: false }),
-			]);
-
-			//
-			// ACT
-			//
-			const activeIds = await Container.get(WorkflowRepository).getActiveIds();
-
-			//
-			// ASSERT
-			//
-			expect(activeIds).toEqual([workflows[0].id]);
 		});
 	});
 });

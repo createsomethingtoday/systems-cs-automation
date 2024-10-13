@@ -13,14 +13,11 @@ export const REGULAR_PROJECT_ADMIN_SCOPES: Scope[] = [
 	'workflow:delete',
 	'workflow:list',
 	'workflow:execute',
-	'workflow:move',
 	'credential:create',
 	'credential:read',
 	'credential:update',
 	'credential:delete',
 	'credential:list',
-	'credential:move',
-	'credential:share',
 	'project:list',
 	'project:read',
 	'project:update',
@@ -35,14 +32,12 @@ export const PERSONAL_PROJECT_OWNER_SCOPES: Scope[] = [
 	'workflow:list',
 	'workflow:execute',
 	'workflow:share',
-	'workflow:move',
 	'credential:create',
 	'credential:read',
 	'credential:update',
 	'credential:delete',
 	'credential:list',
 	'credential:share',
-	'credential:move',
 	'project:list',
 	'project:read',
 ];
@@ -61,13 +56,4 @@ export const PROJECT_EDITOR_SCOPES: Scope[] = [
 	'credential:list',
 	'project:list',
 	'project:read',
-];
-
-export const PROJECT_VIEWER_SCOPES: Scope[] = [
-	'credential:list',
-	'credential:read',
-	'project:list',
-	'project:read',
-	'workflow:list',
-	'workflow:read',
 ];

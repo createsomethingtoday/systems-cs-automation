@@ -1,19 +1,11 @@
 // Load type definitions that come with Cypress module
 /// <reference types="cypress" />
 
-import type { FrontendSettings } from '@n8n/api-types';
-
-Cypress.Keyboard.defaults({
-	keystrokeDelay: 0,
-});
+import { Interception } from 'cypress/types/net-stubbing';
 
 interface SigninPayload {
 	email: string;
 	password: string;
-}
-
-interface DragAndDropOptions {
-	position: 'top' | 'center' | 'bottom';
 }
 
 declare global {
@@ -26,26 +18,14 @@ declare global {
 			config(key: keyof SuiteConfigOverrides): boolean;
 			getByTestId(
 				selector: string,
-				...args: Array<Partial<Loggable & Timeoutable & Withinable & Shadow> | undefined>
+				...args: (Partial<Loggable & Timeoutable & Withinable & Shadow> | undefined)[]
 			): Chainable<JQuery<HTMLElement>>;
 			findChildByTestId(childTestId: string): Chainable<JQuery<HTMLElement>>;
-			/**
-			 * Creates a workflow from the given fixture and optionally renames it.
-			 *
-			 * @param fixtureKey
-			 * @param [workflowName] Optional name for the workflow. A random nanoid is used if not given
-			 */
-			createFixtureWorkflow(fixtureKey: string, workflowName?: string): void;
-			/** @deprecated use signinAsOwner, signinAsAdmin or signinAsMember instead */
+			createFixtureWorkflow(fixtureKey: string, workflowName: string): void;
 			signin(payload: SigninPayload): void;
 			signinAsOwner(): void;
-			signinAsAdmin(): void;
-			/**
-			 * Omitting the index will default to index 0.
-			 */
-			signinAsMember(index?: number): void;
 			signout(): void;
-			overrideSettings(value: Partial<FrontendSettings>): void;
+			interceptREST(method: string, url: string): Chainable<Interception>;
 			enableFeature(feature: string): void;
 			disableFeature(feature: string): void;
 			enableQueueMode(): void;
@@ -56,30 +36,21 @@ declare global {
 			readClipboard(): Chainable<string>;
 			paste(pastePayload: string): void;
 			drag(
-				selector: string | Chainable<JQuery<HTMLElement>>,
+				selector: string | Cypress.Chainable<JQuery<HTMLElement>>,
 				target: [number, number],
 				options?: { abs?: boolean; index?: number; realMouse?: boolean; clickToFinish?: boolean },
 			): void;
-			draganddrop(
-				draggableSelector: string,
-				droppableSelector: string,
-				options?: Partial<DragAndDropOptions>,
-			): void;
+			draganddrop(draggableSelector: string, droppableSelector: string): void;
 			push(type: string, data: unknown): void;
 			shouldNotHaveConsoleErrors(): void;
 			window(): Chainable<
 				AUTWindow & {
-					innerWidth: number;
-					innerHeight: number;
-					preventNodeViewBeforeUnload?: boolean;
-					maxPinnedDataSize?: number;
 					featureFlags: {
-						override: (feature: string, value: unknown) => void;
+						override: (feature: string, value: any) => void;
 					};
 				}
 			>;
 			resetDatabase(): void;
-			setAppDate(targetDate: number | Date): void;
 		}
 	}
 }

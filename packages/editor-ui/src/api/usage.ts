@@ -1,5 +1,4 @@
-import type { CommunityRegisteredRequestDto } from '@n8n/api-types';
-import { makeRestApiRequest } from '@/utils/apiUtils';
+import { makeRestApiRequest, request } from '@/utils/apiUtils';
 import type { IRestApiContext, UsageState } from '@/Interface';
 
 export const getLicense = async (context: IRestApiContext): Promise<UsageState['data']> => {
@@ -17,20 +16,21 @@ export const renewLicense = async (context: IRestApiContext): Promise<UsageState
 	return await makeRestApiRequest(context, 'POST', '/license/renew');
 };
 
-export const requestLicenseTrial = async (
-	context: IRestApiContext,
-): Promise<UsageState['data']> => {
-	return await makeRestApiRequest(context, 'POST', '/license/enterprise/request_trial');
-};
-
-export const registerCommunityEdition = async (
-	context: IRestApiContext,
-	params: CommunityRegisteredRequestDto,
-): Promise<{ title: string; text: string }> => {
-	return await makeRestApiRequest(
-		context,
-		'POST',
-		'/license/enterprise/community-registered',
-		params,
-	);
+export const requestLicenseTrial = async (data: {
+	licenseType: 'enterprise';
+	firstName: string;
+	lastName: string;
+	email: string;
+	instanceUrl: string;
+}): Promise<UsageState['data']> => {
+	return await request({
+		method: 'POST',
+		baseURL: 'https://enterprise.n8n.io',
+		endpoint: '/enterprise-trial',
+		data,
+		withCredentials: false,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
 };

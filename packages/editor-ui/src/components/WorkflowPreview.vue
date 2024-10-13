@@ -1,15 +1,39 @@
+<template>
+	<div :class="$style.container">
+		<div v-if="loaderType === 'image' && !showPreview" :class="$style.imageLoader">
+			<n8n-loading :loading="!showPreview" :rows="1" variant="image" />
+		</div>
+		<div v-else-if="loaderType === 'spinner' && !showPreview" :class="$style.spinner">
+			<n8n-spinner type="dots" />
+		</div>
+		<iframe
+			ref="iframeRef"
+			:class="{
+				[$style.workflow]: !nodeViewDetailsOpened,
+				[$style.executionPreview]: mode === 'execution',
+				[$style.openNDV]: nodeViewDetailsOpened,
+				[$style.show]: showPreview,
+			}"
+			:src="`${rootStore.baseUrl}workflows/demo`"
+			@mouseenter="onMouseEnter"
+			@mouseleave="onMouseLeave"
+		/>
+	</div>
+</template>
+
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue';
 import { useI18n } from '@/composables/useI18n';
 import { useToast } from '@/composables/useToast';
-import type { IWorkflowDb, IWorkflowTemplate } from '@/Interface';
+import type { IWorkflowDb } from '@/Interface';
+import { useRootStore } from '@/stores/n8nRoot.store';
 import { useExecutionsStore } from '@/stores/executions.store';
 
 const props = withDefaults(
 	defineProps<{
 		loading?: boolean;
 		mode?: 'workflow' | 'execution';
-		workflow?: IWorkflowDb | IWorkflowTemplate['workflow'];
+		workflow?: IWorkflowDb;
 		executionId?: string;
 		executionMode?: string;
 		loaderType?: 'image' | 'spinner';
@@ -19,9 +43,6 @@ const props = withDefaults(
 	{
 		loading: false,
 		mode: 'workflow',
-		workflow: undefined,
-		executionId: undefined,
-		executionMode: undefined,
 		loaderType: 'image',
 		canOpenNDV: true,
 		hideNodeIssues: false,
@@ -29,11 +50,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-	close: [];
+	(event: 'close'): void;
 }>();
 
 const i18n = useI18n();
 const toast = useToast();
+const rootStore = useRootStore();
 const executionsStore = useExecutionsStore();
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
@@ -43,15 +65,11 @@ const insideIframe = ref(false);
 const scrollX = ref(0);
 const scrollY = ref(0);
 
-const iframeSrc = computed(() => {
-	return `${window.BASE_PATH ?? '/'}workflows/demo`;
-});
-
 const showPreview = computed(() => {
 	return (
 		!props.loading &&
-		((props.mode === 'workflow' && !!props.workflow) ||
-			(props.mode === 'execution' && !!props.executionId)) &&
+		((props.mode === 'workflow' && props.workflow) ||
+			(props.mode === 'execution' && props.executionId)) &&
 		ready.value
 	);
 });
@@ -91,7 +109,7 @@ const loadExecution = () => {
 			JSON.stringify({
 				command: 'openExecution',
 				executionId: props.executionId,
-				executionMode: props.executionMode ?? '',
+				executionMode: props.executionMode || '',
 				canOpenNDV: props.canOpenNDV,
 			}),
 			'*',
@@ -101,7 +119,7 @@ const loadExecution = () => {
 			iframeRef.value?.contentWindow?.postMessage?.(
 				JSON.stringify({
 					command: 'setActiveExecution',
-					executionId: executionsStore.activeExecution.id,
+					execution: executionsStore.activeExecution,
 				}),
 				'*',
 			);
@@ -190,30 +208,6 @@ watch(
 	},
 );
 </script>
-
-<template>
-	<div :class="$style.container">
-		<div v-if="loaderType === 'image' && !showPreview" :class="$style.imageLoader">
-			<n8n-loading :loading="!showPreview" :rows="1" variant="image" />
-		</div>
-		<div v-else-if="loaderType === 'spinner' && !showPreview" :class="$style.spinner">
-			<n8n-spinner type="dots" />
-		</div>
-		<iframe
-			ref="iframeRef"
-			:class="{
-				[$style.workflow]: !nodeViewDetailsOpened,
-				[$style.executionPreview]: mode === 'execution',
-				[$style.openNDV]: nodeViewDetailsOpened,
-				[$style.show]: showPreview,
-			}"
-			:src="iframeSrc"
-			data-test-id="workflow-preview-iframe"
-			@mouseenter="onMouseEnter"
-			@mouseleave="onMouseLeave"
-		/>
-	</div>
-</template>
 
 <style lang="scss" module>
 .container {

@@ -2,7 +2,6 @@ import { BasePage } from './base';
 
 export class WorkerViewPage extends BasePage {
 	url = '/settings/workers';
-
 	getters = {
 		workerCards: () => cy.getByTestId('worker-card'),
 		workerCard: (workerId: string) => this.getters.workerCards().contains(workerId),

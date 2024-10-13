@@ -7,7 +7,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import { storyblokApiRequest, storyblokApiRequestAllItems } from './GenericFunctions';
 
@@ -27,8 +26,8 @@ export class Storyblok implements INodeType {
 		defaults: {
 			name: 'Storyblok',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'storyblokContentApi',

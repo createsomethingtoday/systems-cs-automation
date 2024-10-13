@@ -1,7 +1,6 @@
-import type { N8nLocale, N8nLocaleTranslateFn } from 'n8n-design-system/types';
-
-import createFormatTemplate from './format';
 import defaultLang from '../locale/lang/en';
+import createFormatTemplate from './format';
+import type { N8nLocale, N8nLocaleTranslateFn } from '@/types';
 
 // import { ElementLocale } from 'element-plus';
 // import ElementLang from 'element-plus/lib/locale/lang/en';
@@ -27,7 +26,7 @@ export const t = function (
 
 	// only support flat keys
 	if (lang[path] !== undefined) {
-		return format(lang[path], ...(options ? [options] : []));
+		return format(lang[path], options);
 	}
 
 	return '';
@@ -45,8 +44,8 @@ export async function use(l: string) {
 	} catch (e) {}
 }
 
-export function i18n(fn: N8nLocaleTranslateFn) {
+export const i18n = function (fn: N8nLocaleTranslateFn) {
 	i18nHandler = fn || i18nHandler;
-}
+};
 
 export default { use, t, i18n };

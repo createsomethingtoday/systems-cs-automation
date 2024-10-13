@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { Readable } from 'stream';
-
 import { ObjectStoreService } from '@/ObjectStore/ObjectStore.service.ee';
+import { Readable } from 'stream';
 import { writeBlockedMessage } from '@/ObjectStore/utils';
 
 jest.mock('axios');

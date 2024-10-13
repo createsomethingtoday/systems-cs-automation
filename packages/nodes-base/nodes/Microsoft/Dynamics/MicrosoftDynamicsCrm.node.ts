@@ -7,7 +7,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import type { IField } from './GenericFunctions';
 import {
@@ -25,7 +24,7 @@ export class MicrosoftDynamicsCrm implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Microsoft Dynamics CRM',
 		name: 'microsoftDynamicsCrm',
-		icon: { light: 'file:microsoftDynamicsCrm.svg', dark: 'file:microsoftDynamicsCrm.dark.svg' },
+		icon: 'file:dynamicsCrm.svg',
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -33,8 +32,8 @@ export class MicrosoftDynamicsCrm implements INodeType {
 		defaults: {
 			name: 'Microsoft Dynamics CRM',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'microsoftDynamicsOAuth2Api',

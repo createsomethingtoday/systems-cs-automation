@@ -1,4 +1,5 @@
 import glob from 'fast-glob';
+import { readFile } from 'fs/promises';
 import type {
 	CodexData,
 	DocumentationLink,
@@ -19,10 +20,7 @@ import {
 	getVersionedNodeTypeAll,
 	jsonParse,
 } from 'n8n-workflow';
-import { readFileSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
 import * as path from 'path';
-
 import { loadClassInIsolation } from './ClassLoader';
 import { CUSTOM_NODES_CATEGORY } from './Constants';
 import type { n8n } from './Interfaces';
@@ -42,20 +40,14 @@ export type Types = {
 export abstract class DirectoryLoader {
 	isLazyLoaded = false;
 
-	// Another way of keeping track of the names and versions of a node. This
-	// seems to only be used by the installedPackages repository
 	loadedNodes: INodeTypeNameVersion[] = [];
 
-	// Stores the loaded descriptions and sourcepaths
 	nodeTypes: INodeTypeData = {};
 
 	credentialTypes: ICredentialTypeData = {};
 
-	// Stores the location and classnames of the nodes and credentials that are
-	// loaded; used to actually load the files in lazy-loading scenario.
 	known: KnownNodesAndCredentials = { nodes: {}, credentials: {} };
 
-	// Stores the different versions with their individual descriptions
 	types: Types = { nodes: [], credentials: [] };
 
 	protected nodesByCredential: Record<string, string[]> = {};
@@ -109,11 +101,11 @@ export abstract class DirectoryLoader {
 
 		tempNode.description.name = fullNodeName;
 
-		this.fixIconPaths(tempNode.description, filePath);
+		this.fixIconPath(tempNode.description, filePath);
 
 		if ('nodeVersions' in tempNode) {
 			for (const versionNode of Object.values(tempNode.nodeVersions)) {
-				this.fixIconPaths(versionNode.description, filePath);
+				this.fixIconPath(versionNode.description, filePath);
 			}
 
 			for (const version of Object.values(tempNode.nodeVersions)) {
@@ -126,7 +118,7 @@ export abstract class DirectoryLoader {
 
 			if (currentVersionNode.hasOwnProperty('executeSingle')) {
 				throw new ApplicationError(
-					'"executeSingle" has been removed. Please update the code of this node to use "execute" instead.',
+					'"executeSingle" has been removed. Please update the code of this node to use "execute" instead!',
 					{ extra: { nodeName: `${this.packageName}.${nodeName}` } },
 				);
 			}
@@ -177,7 +169,7 @@ export abstract class DirectoryLoader {
 			// include the credential type in the predefined credentials (HTTP node)
 			Object.assign(tempCredential, { toJSON });
 
-			this.fixIconPaths(tempCredential, filePath);
+			this.fixIconPath(tempCredential, filePath);
 		} catch (e) {
 			if (e instanceof TypeError) {
 				throw new ApplicationError(
@@ -289,29 +281,14 @@ export abstract class DirectoryLoader {
 		}
 	}
 
-	private getIconPath(icon: string, filePath: string) {
-		const iconPath = path.join(path.dirname(filePath), icon.replace('file:', ''));
-		const relativePath = path.relative(this.directory, iconPath);
-		return `icons/${this.packageName}/${relativePath}`;
-	}
-
-	private fixIconPaths(
+	private fixIconPath(
 		obj: INodeTypeDescription | INodeTypeBaseDescription | ICredentialType,
 		filePath: string,
 	) {
-		const { icon } = obj;
-		if (!icon) return;
-
-		if (typeof icon === 'string') {
-			if (icon.startsWith('file:')) {
-				obj.iconUrl = this.getIconPath(icon, filePath);
-				delete obj.icon;
-			}
-		} else if (icon.light.startsWith('file:') && icon.dark.startsWith('file:')) {
-			obj.iconUrl = {
-				light: this.getIconPath(icon.light, filePath),
-				dark: this.getIconPath(icon.dark, filePath),
-			};
+		if (obj.icon?.startsWith('file:')) {
+			const iconPath = path.join(path.dirname(filePath), obj.icon.substring(5));
+			const relativePath = path.relative(this.directory, iconPath);
+			obj.iconUrl = `icons/${this.packageName}/${relativePath}`;
 			delete obj.icon;
 		}
 	}
@@ -352,11 +329,18 @@ export class CustomDirectoryLoader extends DirectoryLoader {
  * e.g. /nodes-base or community packages.
  */
 export class PackageDirectoryLoader extends DirectoryLoader {
-	packageJson: n8n.PackageJson = this.readJSONSync('package.json');
+	packageName = '';
 
-	packageName = this.packageJson.name;
+	packageJson!: n8n.PackageJson;
+
+	async readPackageJson() {
+		this.packageJson = await this.readJSON('package.json');
+		this.packageName = this.packageJson.name;
+	}
 
 	override async loadAll() {
+		await this.readPackageJson();
+
 		const { n8n } = this.packageJson;
 		if (!n8n) return;
 
@@ -386,17 +370,6 @@ export class PackageDirectoryLoader extends DirectoryLoader {
 		});
 	}
 
-	protected readJSONSync<T>(file: string): T {
-		const filePath = this.resolvePath(file);
-		const fileString = readFileSync(filePath, 'utf8');
-
-		try {
-			return jsonParse<T>(fileString);
-		} catch (error) {
-			throw new ApplicationError('Failed to parse JSON', { extra: { filePath } });
-		}
-	}
-
 	protected async readJSON<T>(file: string): Promise<T> {
 		const filePath = this.resolvePath(file);
 		const fileString = await readFile(filePath, 'utf8');
@@ -414,6 +387,8 @@ export class PackageDirectoryLoader extends DirectoryLoader {
  */
 export class LazyPackageDirectoryLoader extends PackageDirectoryLoader {
 	override async loadAll() {
+		await this.readPackageJson();
+
 		try {
 			const knownNodes: typeof this.known.nodes = await this.readJSON('dist/known/nodes.json');
 			for (const nodeName in knownNodes) {

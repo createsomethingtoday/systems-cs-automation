@@ -1,19 +1,16 @@
-import type { IClientPublishOptions } from 'mqtt';
-import {
-	type IExecuteFunctions,
-	type ICredentialsDecrypted,
-	type ICredentialTestFunctions,
-	type INodeCredentialTestResult,
-	type INodeExecutionData,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
-	ensureError,
+import type {
+	IExecuteFunctions,
+	ICredentialDataDecryptedObject,
+	ICredentialsDecrypted,
+	ICredentialTestFunctions,
+	INodeCredentialTestResult,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
-import { createClient, type MqttCredential } from './GenericFunctions';
-
-type PublishOption = Pick<IClientPublishOptions, 'qos' | 'retain'>;
+import * as mqtt from 'mqtt';
+import { formatPrivateKey } from '@utils/utilities';
 
 export class Mqtt implements INodeType {
 	description: INodeTypeDescription = {
@@ -26,8 +23,8 @@ export class Mqtt implements INodeType {
 		defaults: {
 			name: 'MQTT',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'mqtt',
@@ -68,7 +65,7 @@ export class Mqtt implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				options: [
 					{
@@ -112,17 +109,67 @@ export class Mqtt implements INodeType {
 				this: ICredentialTestFunctions,
 				credential: ICredentialsDecrypted,
 			): Promise<INodeCredentialTestResult> {
-				const credentials = credential.data as unknown as MqttCredential;
-
+				const credentials = credential.data as ICredentialDataDecryptedObject;
 				try {
-					const client = await createClient(credentials);
-					client.end();
-				} catch (e) {
-					const error = ensureError(e);
+					const protocol = (credentials.protocol as string) || 'mqtt';
+					const host = credentials.host as string;
+					const brokerUrl = `${protocol}://${host}`;
+					const port = (credentials.port as number) || 1883;
+					const clientId =
+						(credentials.clientId as string) || `mqttjs_${Math.random().toString(16).substr(2, 8)}`;
+					const clean = credentials.clean as boolean;
+					const ssl = credentials.ssl as boolean;
+					const ca = formatPrivateKey(credentials.ca as string);
+					const cert = formatPrivateKey(credentials.cert as string);
+					const key = formatPrivateKey(credentials.key as string);
+					const rejectUnauthorized = credentials.rejectUnauthorized as boolean;
 
+					let client: mqtt.MqttClient;
+
+					if (!ssl) {
+						const clientOptions: mqtt.IClientOptions = {
+							port,
+							clean,
+							clientId,
+						};
+
+						if (credentials.username && credentials.password) {
+							clientOptions.username = credentials.username as string;
+							clientOptions.password = credentials.password as string;
+						}
+						client = mqtt.connect(brokerUrl, clientOptions);
+					} else {
+						const clientOptions: mqtt.IClientOptions = {
+							port,
+							clean,
+							clientId,
+							ca,
+							cert,
+							key,
+							rejectUnauthorized,
+						};
+						if (credentials.username && credentials.password) {
+							clientOptions.username = credentials.username as string;
+							clientOptions.password = credentials.password as string;
+						}
+
+						client = mqtt.connect(brokerUrl, clientOptions);
+					}
+
+					await new Promise((resolve, reject) => {
+						client.on('connect', (test) => {
+							resolve(test);
+							client.end();
+						});
+						client.on('error', (error) => {
+							client.end();
+							reject(error);
+						});
+					});
+				} catch (error) {
 					return {
 						status: 'Error',
-						message: error.message,
+						message: (error as Error).message,
 					};
 				}
 				return {
@@ -134,27 +181,88 @@ export class Mqtt implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const credentials = await this.getCredentials<MqttCredential>('mqtt');
-		const client = await createClient(credentials);
-
-		const publishPromises = [];
 		const items = this.getInputData();
-		for (let i = 0; i < items.length; i++) {
-			const topic = this.getNodeParameter('topic', i) as string;
-			const options = this.getNodeParameter('options', i) as unknown as PublishOption;
-			const sendInputData = this.getNodeParameter('sendInputData', i) as boolean;
-			const message = sendInputData
-				? JSON.stringify(items[i].json)
-				: (this.getNodeParameter('message', i) as string);
-			publishPromises.push(client.publishAsync(topic, message, options));
+		const length = items.length;
+		const credentials = await this.getCredentials('mqtt');
+
+		const protocol = (credentials.protocol as string) || 'mqtt';
+		const host = credentials.host as string;
+		const brokerUrl = `${protocol}://${host}`;
+		const port = (credentials.port as number) || 1883;
+		const clientId =
+			(credentials.clientId as string) || `mqttjs_${Math.random().toString(16).substr(2, 8)}`;
+		const clean = credentials.clean as boolean;
+		const ssl = credentials.ssl as boolean;
+		const ca = credentials.ca as string;
+		const cert = credentials.cert as string;
+		const key = credentials.key as string;
+		const rejectUnauthorized = credentials.rejectUnauthorized as boolean;
+
+		let client: mqtt.MqttClient;
+
+		if (!ssl) {
+			const clientOptions: mqtt.IClientOptions = {
+				port,
+				clean,
+				clientId,
+			};
+
+			if (credentials.username && credentials.password) {
+				clientOptions.username = credentials.username as string;
+				clientOptions.password = credentials.password as string;
+			}
+
+			client = mqtt.connect(brokerUrl, clientOptions);
+		} else {
+			const clientOptions: mqtt.IClientOptions = {
+				port,
+				clean,
+				clientId,
+				ca,
+				cert,
+				key,
+				rejectUnauthorized,
+			};
+			if (credentials.username && credentials.password) {
+				clientOptions.username = credentials.username as string;
+				clientOptions.password = credentials.password as string;
+			}
+
+			client = mqtt.connect(brokerUrl, clientOptions);
 		}
 
-		await Promise.all(publishPromises);
+		const sendInputData = this.getNodeParameter('sendInputData', 0) as boolean;
 
-		// wait for the in-flight messages to be acked.
-		// needed for messages with QoS 1 & 2
-		await client.endAsync();
+		const data = await new Promise((resolve, reject) => {
+			client.on('connect', () => {
+				for (let i = 0; i < length; i++) {
+					let message;
+					const topic = this.getNodeParameter('topic', i) as string;
+					const options = this.getNodeParameter('options', i);
 
-		return [items];
+					try {
+						if (sendInputData) {
+							message = JSON.stringify(items[i].json);
+						} else {
+							message = this.getNodeParameter('message', i) as string;
+						}
+						client.publish(topic, message, options);
+					} catch (e) {
+						reject(e);
+					}
+				}
+				//wait for the in-flight messages to be acked.
+				//needed for messages with QoS 1 & 2
+				client.end(false, {}, () => {
+					resolve([items]);
+				});
+
+				client.on('error', (e) => {
+					reject(e);
+				});
+			});
+		});
+
+		return data as INodeExecutionData[][];
 	}
 }

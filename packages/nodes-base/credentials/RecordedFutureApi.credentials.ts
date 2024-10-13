@@ -7,10 +7,7 @@ export class RecordedFutureApi implements ICredentialType {
 
 	documentationUrl = 'recordedfuture';
 
-	icon = {
-		light: 'file:icons/RecordedFuture.svg',
-		dark: 'file:icons/RecordedFuture.dark.svg',
-	} as const;
+	icon = 'file:icons/RecordedFuture.svg';
 
 	httpRequestNode = {
 		name: 'Recorded Future',

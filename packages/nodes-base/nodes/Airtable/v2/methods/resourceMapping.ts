@@ -31,6 +31,7 @@ const airtableReadOnlyFields = [
 	'rollup',
 	'externalSyncSource',
 	'multipleLookupValues',
+	'multipleRecordLinks',
 ];
 
 const airtableTypesMap: TypesMap = {
@@ -41,7 +42,7 @@ const airtableTypesMap: TypesMap = {
 	time: [],
 	object: [],
 	options: ['singleSelect'],
-	array: ['multipleSelects', 'multipleRecordLinks', 'multipleAttachments'],
+	array: ['multipleSelects', 'multipleAttachments'],
 };
 
 function mapForeignType(foreignType: string, typesMap: TypesMap): FieldType {

@@ -1,3 +1,21 @@
+<template>
+	<ElDrawer
+		:direction="direction"
+		:model-value="uiStore.isModalOpen(name)"
+		:size="width"
+		:before-close="close"
+		:modal="modal"
+		:wrapper-closable="wrapperClosable"
+	>
+		<template #header>
+			<slot name="header" />
+		</template>
+		<span @keydown.stop>
+			<slot name="content" />
+		</span>
+	</ElDrawer>
+</template>
+
 <script lang="ts">
 import { useUIStore } from '@/stores/ui.store';
 import { mapStores } from 'pinia';
@@ -14,7 +32,6 @@ export default defineComponent({
 	props: {
 		name: {
 			type: String,
-			required: true,
 		},
 		beforeClose: {
 			type: Function,
@@ -56,7 +73,7 @@ export default defineComponent({
 	},
 	methods: {
 		onWindowKeydown(event: KeyboardEvent) {
-			if (!this.uiStore.isModalActiveById[this.name]) {
+			if (!this.uiStore.isModalActive(this.name)) {
 				return;
 			}
 
@@ -65,7 +82,7 @@ export default defineComponent({
 			}
 		},
 		handleEnter() {
-			if (this.uiStore.isModalActiveById[this.name]) {
+			if (this.uiStore.isModalActive(this.name)) {
 				this.$emit('enter');
 			}
 		},
@@ -82,24 +99,6 @@ export default defineComponent({
 	},
 });
 </script>
-
-<template>
-	<ElDrawer
-		:direction="direction"
-		:model-value="uiStore.modalsById[name].open"
-		:size="width"
-		:before-close="close"
-		:modal="modal"
-		:wrapper-closable="wrapperClosable"
-	>
-		<template #header>
-			<slot name="header" />
-		</template>
-		<span @keydown.stop>
-			<slot name="content" />
-		</span>
-	</ElDrawer>
-</template>
 
 <style lang="scss">
 .el-drawer__header {

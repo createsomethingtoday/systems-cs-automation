@@ -38,11 +38,9 @@ describe('telemetry', () => {
 
 			telemetry.identify(userId, instanceId);
 			expect(identifyFunction).toHaveBeenCalledTimes(1);
-			expect(identifyFunction).toHaveBeenCalledWith(
-				`${instanceId}#${userId}`,
-				{ instance_id: instanceId },
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(identifyFunction).toHaveBeenCalledWith(`${instanceId}#${userId}`, {
+				instance_id: instanceId,
+			});
 		});
 
 		it('Rudderstack identify method should be called when proving userId and versionCli ', () => {
@@ -62,14 +60,10 @@ describe('telemetry', () => {
 
 			telemetry.identify(userId, instanceId, versionCli);
 			expect(identifyFunction).toHaveBeenCalledTimes(1);
-			expect(identifyFunction).toHaveBeenCalledWith(
-				`${instanceId}#${userId}`,
-				{
-					instance_id: instanceId,
-					version_cli: versionCli,
-				},
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(identifyFunction).toHaveBeenCalledWith(`${instanceId}#${userId}`, {
+				instance_id: instanceId,
+				version_cli: versionCli,
+			});
 		});
 
 		it('Rudderstack identify method should be called when proving userId and versionCli and projectId', () => {
@@ -90,14 +84,10 @@ describe('telemetry', () => {
 
 			telemetry.identify(userId, instanceId, versionCli, projectId);
 			expect(identifyFunction).toHaveBeenCalledTimes(1);
-			expect(identifyFunction).toHaveBeenCalledWith(
-				`${instanceId}#${userId}#${projectId}`,
-				{
-					instance_id: instanceId,
-					version_cli: versionCli,
-				},
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(identifyFunction).toHaveBeenCalledWith(`${instanceId}#${userId}#${projectId}`, {
+				instance_id: instanceId,
+				version_cli: versionCli,
+			});
 		});
 
 		it('Rudderstack identify method should be called when proving userId and deployment type is cloud ', () => {
@@ -121,15 +111,11 @@ describe('telemetry', () => {
 
 			telemetry.identify(userId, instanceId, versionCli);
 			expect(identifyFunction).toHaveBeenCalledTimes(1);
-			expect(identifyFunction).toHaveBeenCalledWith(
-				`${instanceId}#${userId}`,
-				{
-					instance_id: instanceId,
-					version_cli: versionCli,
-					user_cloud_id: userCloudId,
-				},
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(identifyFunction).toHaveBeenCalledWith(`${instanceId}#${userId}`, {
+				instance_id: instanceId,
+				version_cli: versionCli,
+				user_cloud_id: userCloudId,
+			});
 		});
 
 		it('Rudderstack identify method should be called when proving userId and deployment type is cloud', () => {
@@ -153,15 +139,11 @@ describe('telemetry', () => {
 
 			telemetry.identify(userId, instanceId, versionCli);
 			expect(identifyFunction).toHaveBeenCalledTimes(1);
-			expect(identifyFunction).toHaveBeenCalledWith(
-				`${instanceId}#${userId}`,
-				{
-					instance_id: instanceId,
-					version_cli: versionCli,
-					user_cloud_id: userCloudId,
-				},
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(identifyFunction).toHaveBeenCalledWith(`${instanceId}#${userId}`, {
+				instance_id: instanceId,
+				version_cli: versionCli,
+				user_cloud_id: userCloudId,
+			});
 		});
 
 		it('Rudderstack reset method should be called when proving userId and deployment type is cloud', () => {
@@ -193,14 +175,10 @@ describe('telemetry', () => {
 			telemetry.track(event, properties, options);
 
 			expect(trackFunction).toHaveBeenCalledTimes(1);
-			expect(trackFunction).toHaveBeenCalledWith(
-				event,
-				{
-					...properties,
-					version_cli: MOCK_VERSION_CLI,
-				},
-				{ context: { ip: '0.0.0.0' } },
-			);
+			expect(trackFunction).toHaveBeenCalledWith(event, {
+				...properties,
+				version_cli: MOCK_VERSION_CLI,
+			});
 		});
 	});
 });

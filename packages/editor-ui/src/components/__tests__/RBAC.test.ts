@@ -18,12 +18,9 @@ vi.mock('@/stores/rbac.store', () => ({
 
 describe('RBAC', () => {
 	it('renders default slot when hasScope is true', async () => {
-		vi.mocked(useRBACStore).mockImplementation(
-			() =>
-				({
-					hasScope: () => true,
-				}) as unknown as ReturnType<typeof useRBACStore>,
-		);
+		vi.mocked(useRBACStore).mockImplementation(() => ({
+			hasScope: () => true,
+		}));
 
 		const wrapper = renderComponent({
 			props: { scope: 'worfklow:list' },
@@ -37,12 +34,9 @@ describe('RBAC', () => {
 	});
 
 	it('renders fallback slot when hasScope is false', async () => {
-		vi.mocked(useRBACStore).mockImplementation(
-			() =>
-				({
-					hasScope: () => false,
-				}) as unknown as ReturnType<typeof useRBACStore>,
-		);
+		vi.mocked(useRBACStore).mockImplementation(() => ({
+			hasScope: () => false,
+		}));
 
 		const wrapper = renderComponent({
 			props: { scope: 'worfklow:list' },

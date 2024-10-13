@@ -1,21 +1,16 @@
 import type { SecureContextOptions } from 'tls';
-import {
-	deepCopy,
-	type ICredentialDataDecryptedObject,
-	type IDataObject,
-	type INodeExecutionData,
-	type INodeProperties,
-	type IOAuth2Options,
-	type IRequestOptions,
+import type {
+	IDataObject,
+	INodeExecutionData,
+	IOAuth2Options,
+	IRequestOptions,
 } from 'n8n-workflow';
 
 import set from 'lodash/set';
-import isPlainObject from 'lodash/isPlainObject';
 
 import FormData from 'form-data';
-import get from 'lodash/get';
-import { formatPrivateKey } from '../../utils/utilities';
 import type { HttpSslAuthCredentials } from './interfaces';
+import { formatPrivateKey } from '../../utils/utilities';
 
 export type BodyParameter = {
 	name: string;
@@ -34,39 +29,8 @@ export const replaceNullValues = (item: INodeExecutionData) => {
 	return item;
 };
 
-export const REDACTED = '**hidden**';
-
-function isObject(obj: unknown): obj is IDataObject {
-	return isPlainObject(obj);
-}
-
-function redact<T = unknown>(obj: T, secrets: string[]): T {
-	if (typeof obj === 'string') {
-		return secrets.reduce((safe, secret) => safe.replace(secret, REDACTED), obj) as T;
-	}
-
-	if (Array.isArray(obj)) {
-		return obj.map((item) => redact(item, secrets)) as T;
-	} else if (isObject(obj)) {
-		for (const [key, value] of Object.entries(obj)) {
-			(obj as IDataObject)[key] = redact(value, secrets);
-		}
-	}
-
-	return obj;
-}
-
-export function sanitizeUiMessage(
-	request: IRequestOptions,
-	authDataKeys: IAuthDataSanitizeKeys,
-	secrets?: string[],
-) {
-	const { body, ...rest } = request as IDataObject;
-
-	let sendRequest: IDataObject = { body };
-	for (const [key, value] of Object.entries(rest)) {
-		sendRequest[key] = deepCopy(value);
-	}
+export function sanitizeUiMessage(request: IRequestOptions, authDataKeys: IAuthDataSanitizeKeys) {
+	let sendRequest = request as unknown as IDataObject;
 
 	// Protect browser from sending large binary data
 	if (Buffer.isBuffer(sendRequest.body) && sendRequest.body.length > 250000) {
@@ -74,7 +38,7 @@ export function sanitizeUiMessage(
 			...request,
 			body: `Binary data got replaced with this text. Original was a Buffer with a size of ${
 				(request.body as string).length
-			} bytes.`,
+			} byte.`,
 		};
 	}
 
@@ -86,7 +50,7 @@ export function sanitizeUiMessage(
 				// eslint-disable-next-line @typescript-eslint/no-loop-func
 				(acc: IDataObject, curr) => {
 					acc[curr] = authDataKeys[requestProperty].includes(curr)
-						? REDACTED
+						? '** hidden **'
 						: (sendRequest[requestProperty] as IDataObject)[curr];
 					return acc;
 				},
@@ -94,49 +58,8 @@ export function sanitizeUiMessage(
 			),
 		};
 	}
-	const HEADER_BLOCKLIST = new Set([
-		'authorization',
-		'x-api-key',
-		'x-auth-token',
-		'cookie',
-		'proxy-authorization',
-		'sslclientcert',
-	]);
-
-	const headers = sendRequest.headers as IDataObject;
-
-	if (headers) {
-		for (const headerName of Object.keys(headers)) {
-			if (HEADER_BLOCKLIST.has(headerName.toLowerCase())) {
-				headers[headerName] = REDACTED;
-			}
-		}
-	}
-	if (secrets && secrets.length > 0) {
-		return redact(sendRequest, secrets);
-	}
 
 	return sendRequest;
-}
-
-export function getSecrets(
-	properties: INodeProperties[],
-	credentials: ICredentialDataDecryptedObject,
-): string[] {
-	const sensitivePropNames = new Set(
-		properties.filter((prop) => prop.typeOptions?.password).map((prop) => prop.name),
-	);
-
-	const secrets = Object.entries(credentials)
-		.filter(([propName]) => sensitivePropNames.has(propName))
-		.map(([_, value]) => value)
-		.filter((value): value is string => typeof value === 'string');
-	const oauthAccessToken = get(credentials, 'oauthTokenData.access_token');
-	if (typeof oauthAccessToken === 'string') {
-		secrets.push(oauthAccessToken);
-	}
-
-	return secrets;
 }
 
 export const getOAuth2AdditionalParameters = (nodeCredentialType: string) => {

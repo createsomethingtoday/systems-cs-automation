@@ -18,9 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 	dismissible: true,
 });
 
-const emit = defineEmits<{
-	close: [];
-}>();
+const emit = defineEmits(['close']);
 
 const hasTrailingContent = computed(() => {
 	return !!slots.trailingContent;
@@ -33,7 +31,6 @@ async function onCloseClick() {
 </script>
 <template>
 	<n8n-callout
-		:class="$style.callout"
 		:theme="props.theme"
 		:icon="props.customIcon"
 		icon-size="medium"
@@ -61,10 +58,6 @@ async function onCloseClick() {
 </template>
 
 <style lang="scss" module>
-.callout {
-	height: calc(var(--header-height) * 1px);
-}
-
 .mainContent {
 	display: flex;
 	gap: var(--spacing-4xs);
@@ -77,11 +70,5 @@ async function onCloseClick() {
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-l);
-}
-
-:global(.n8n-callout) {
-	border-top: 0;
-	border-left: 0;
-	border-right: 0;
 }
 </style>

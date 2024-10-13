@@ -5,12 +5,7 @@ import type {
 	IWorkflowDb,
 	NewWorkflowResponse,
 } from '@/Interface';
-import type {
-	ExecutionFilters,
-	ExecutionOptions,
-	ExecutionSummary,
-	IDataObject,
-} from 'n8n-workflow';
+import type { ExecutionFilters, ExecutionOptions, IDataObject } from 'n8n-workflow';
 import { makeRestApiRequest } from '@/utils/apiUtils';
 
 export async function getNewWorkflow(context: IRestApiContext, data?: IDataObject) {
@@ -45,11 +40,7 @@ export async function getActiveWorkflows(context: IRestApiContext) {
 }
 
 export async function getActiveExecutions(context: IRestApiContext, filter: IDataObject) {
-	const output = await makeRestApiRequest<{
-		results: ExecutionSummary[];
-		count: number;
-		estimated: boolean;
-	}>(context, 'GET', '/executions', { filter });
+	const output = await makeRestApiRequest(context, 'GET', '/executions', { filter });
 
 	return output.results;
 }

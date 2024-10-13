@@ -5,7 +5,6 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
 
 import moment from 'moment-timezone';
 import type { IAlias, IEvent, IIdentity, ITrack } from './GenericFunctions';
@@ -31,8 +30,8 @@ export class PostHog implements INodeType {
 		defaults: {
 			name: 'PostHog',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'postHogApi',

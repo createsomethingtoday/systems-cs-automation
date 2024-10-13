@@ -10,7 +10,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionType, deepCopy } from 'n8n-workflow';
+import { deepCopy } from 'n8n-workflow';
 import gm from 'gm';
 import { file } from 'tmp-promise';
 import getSystemFonts from 'get-system-fonts';
@@ -757,7 +757,6 @@ export class EditImage implements INodeType {
 		displayName: 'Edit Image',
 		name: 'editImage',
 		icon: 'fa:image',
-		iconColor: 'purple',
 		group: ['transform'],
 		version: 1,
 		description: 'Edits an image like blur, resize or adding border and text',
@@ -765,8 +764,8 @@ export class EditImage implements INodeType {
 			name: 'Edit Image',
 			color: '#553399',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			{
 				displayName: 'Operation',
@@ -851,7 +850,7 @@ export class EditImage implements INodeType {
 								},
 								default: 'default',
 								description:
-									'The font to use. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+									'The font to use. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 							},
 						],
 					},
@@ -863,7 +862,7 @@ export class EditImage implements INodeType {
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
-				placeholder: 'Add option',
+				placeholder: 'Add Option',
 				default: {},
 				displayOptions: {
 					hide: {
@@ -892,7 +891,7 @@ export class EditImage implements INodeType {
 						},
 						default: 'default',
 						description:
-							'The font to use. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+							'The font to use. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 					},
 					{
 						displayName: 'Format',

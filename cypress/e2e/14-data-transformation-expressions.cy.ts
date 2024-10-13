@@ -1,4 +1,5 @@
 import { WorkflowPage, NDV } from '../pages';
+import { getVisibleSelect } from '../utils';
 
 const wf = new WorkflowPage();
 const ndv = new NDV();

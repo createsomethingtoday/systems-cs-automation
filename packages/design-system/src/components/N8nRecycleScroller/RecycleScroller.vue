@@ -193,6 +193,9 @@ function onScroll() {
 				</div>
 			</div>
 		</div>
+		<div class="post-list-container">
+			<slot name="postListContent" />
+		</div>
 	</div>
 </template>
 
@@ -219,5 +222,8 @@ function onScroll() {
 	display: flex;
 	position: relative;
 	width: 100%;
+}
+.post-list-container {
+	margin-top: var(--spacing-3xl);
 }
 </style>

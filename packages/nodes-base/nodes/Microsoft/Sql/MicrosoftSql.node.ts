@@ -1,15 +1,14 @@
 import type { IResult } from 'mssql';
-import {
-	type IExecuteFunctions,
-	type ICredentialDataDecryptedObject,
-	type ICredentialsDecrypted,
-	type ICredentialTestFunctions,
-	type IDataObject,
-	type INodeCredentialTestResult,
-	type INodeExecutionData,
-	type INodeType,
-	type INodeTypeDescription,
-	NodeConnectionType,
+import type {
+	IExecuteFunctions,
+	ICredentialDataDecryptedObject,
+	ICredentialsDecrypted,
+	ICredentialTestFunctions,
+	IDataObject,
+	INodeCredentialTestResult,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
 } from 'n8n-workflow';
 
 import type { ITables } from './interfaces';
@@ -35,9 +34,8 @@ export class MicrosoftSql implements INodeType {
 		defaults: {
 			name: 'Microsoft SQL',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
-		usableAsTool: true,
+		inputs: ['main'],
+		outputs: ['main'],
 		parameterPane: 'wide',
 		credentials: [
 			{

@@ -1,10 +1,8 @@
-import type { N8nLocaleTranslateFnOptions } from 'n8n-design-system/types/i18n';
-
 export type Rule = { name: string; config?: unknown };
 
 export type RuleGroup = {
 	rules: Array<Rule | RuleGroup>;
-	defaultError?: { messageKey: string; options?: N8nLocaleTranslateFnOptions };
+	defaultError?: { messageKey: string; options?: unknown };
 };
 
 export type Validatable = string | number | boolean | null | undefined;
@@ -15,8 +13,8 @@ export type IValidator<T = unknown> = {
 		config: T,
 	) =>
 		| false
-		| { message: string; options?: N8nLocaleTranslateFnOptions }
-		| { messageKey: string; options?: N8nLocaleTranslateFnOptions }
+		| { message: string; options?: unknown }
+		| { messageKey: string; options?: unknown }
 		| null;
 };
 
@@ -56,7 +54,6 @@ export type IFormInput = {
 		focusInitially?: boolean;
 		disabled?: boolean;
 		labelSize?: 'small' | 'medium' | 'large';
-		tagSize?: 'small' | 'medium' | 'large';
 		labelAlignment?: 'left' | 'right' | 'center';
 		tooltipText?: string;
 	};

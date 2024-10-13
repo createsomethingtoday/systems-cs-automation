@@ -28,4 +28,7 @@ export const userFactory = Factory.extend<IUser>({
 	mfaEnabled() {
 		return false;
 	},
+	hasRecoveryCodesLeft() {
+		return false;
+	},
 });

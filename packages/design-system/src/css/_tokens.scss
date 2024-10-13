@@ -530,6 +530,9 @@
 	--border-width-base: 1px;
 	--border-base: var(--border-width-base) var(--border-style-base) var(--color-foreground-base);
 
+	--font-family: 'Open Sans', sans-serif;
+	--font-family-monospace: 'Courier New', Courier, monospace;
+
 	--font-size-3xs: 0.625rem;
 	--font-size-2xs: 0.75rem;
 	--font-size-xs: 0.8125rem;
@@ -546,8 +549,6 @@
 
 	--font-weight-regular: 400;
 	--font-weight-bold: 600;
-	--font-family: 'Open Sans', sans-serif;
-	--font-family-monospace: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 
 	--spacing-5xs: 0.125rem;
 	--spacing-4xs: 0.25rem;

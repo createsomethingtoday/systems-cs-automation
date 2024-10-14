@@ -15,7 +15,9 @@ export default defineComponent({
 			return this.rootStore.baseUrl;
 		},
 		logoPath(): string {
-			return this.basePath + this.uiStore.logo;
+			const path = this.basePath + this.uiStore.logo;
+			console.log('Full logo path:', path);
+			return path;
 		},
 	},
 });

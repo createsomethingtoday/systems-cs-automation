@@ -45,6 +45,8 @@ if (process.env.VUE_APP_PRIMARY_COLOR) {
 	document.documentElement.style.setProperty('--env-primary-color', process.env.VUE_APP_PRIMARY_COLOR);
 }
 
+console.log('Logo name:', process.env.VUE_APP_LOGO_NAME);
+
 app.mount('#app');
 
 if (!import.meta.env.PROD) {

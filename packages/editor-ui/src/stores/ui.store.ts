@@ -202,10 +202,9 @@ export const useUIStore = defineStore(STORES.UI, {
 		},
 		logo(): string {
 			const { releaseChannel } = useSettingsStore().settings;
+			const logoName = process.env.VUE_APP_LOGO_NAME || releaseChannel || 'default';
 			const suffix = this.appliedTheme === 'dark' ? '-dark.svg' : '.svg';
-			return `static/logo/${
-				releaseChannel === 'stable' ? 'expanded' : `channel/${releaseChannel}`
-			}${suffix}`;
+			return `static/logo/channel/${logoName}${suffix}`;
 		},
 		contextBasedTranslationKeys() {
 			const settingsStore = useSettingsStore();

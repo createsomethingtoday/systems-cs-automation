@@ -40,6 +40,11 @@ app.use(router);
 app.use(i18nInstance);
 app.use(ChartJSPlugin);
 
+// Set the CSS custom property for primary color
+if (process.env.VUE_APP_PRIMARY_COLOR) {
+	document.documentElement.style.setProperty('--env-primary-color', process.env.VUE_APP_PRIMARY_COLOR);
+}
+
 app.mount('#app');
 
 if (!import.meta.env.PROD) {

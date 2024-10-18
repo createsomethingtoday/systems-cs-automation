@@ -201,7 +201,7 @@ export const useUIStore = defineStore(STORES.UI, {
 			return this.theme === 'system' ? getPreferredTheme() : this.theme;
 		},
 		logo(): string {
-			const logoName = process.env.VUE_APP_LOGO_NAME || 'halfdozen';
+			const logoName = this.sidebarMenuCollapsed ? 'halfdozen-collapsed' : (process.env.VUE_APP_LOGO_NAME || 'halfdozen');
 			const suffix = this.appliedTheme === 'dark' ? '-dark.svg' : '.svg';
 			return `static/logo/channel/${logoName}${suffix}`;
 		},

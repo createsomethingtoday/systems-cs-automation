@@ -201,8 +201,7 @@ export const useUIStore = defineStore(STORES.UI, {
 			return this.theme === 'system' ? getPreferredTheme() : this.theme;
 		},
 		logo(): string {
-			const { releaseChannel } = useSettingsStore().settings;
-			const logoName = process.env.VUE_APP_LOGO_NAME || releaseChannel || 'default';
+			const logoName = process.env.VUE_APP_LOGO_NAME || 'halfdozen';
 			const suffix = this.appliedTheme === 'dark' ? '-dark.svg' : '.svg';
 			return `static/logo/channel/${logoName}${suffix}`;
 		},

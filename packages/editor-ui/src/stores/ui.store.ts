@@ -201,8 +201,12 @@ export const useUIStore = defineStore(STORES.UI, {
 			return this.theme === 'system' ? getPreferredTheme() : this.theme;
 		},
 		logo(): string {
-			const logoName = this.sidebarMenuCollapsed ? 'halfdozen-collapsed' : (process.env.VUE_APP_LOGO_NAME || 'halfdozen');
+			const { releaseChannel } = useSettingsStore().settings;
+			const logoName = process.env.VUE_APP_LOGO_NAME || 'halfdozen';
 			const suffix = this.appliedTheme === 'dark' ? '-dark.svg' : '.svg';
+			if (this.sidebarMenuCollapsed) {
+				return `static/logo/channel/${logoName}-collapsed${suffix}`;
+			}
 			return `static/logo/channel/${logoName}${suffix}`;
 		},
 		contextBasedTranslationKeys() {

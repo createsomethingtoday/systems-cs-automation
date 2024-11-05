@@ -28,6 +28,9 @@ const pinia = createPinia();
 
 const app = createApp(App);
 
+// Add title configuration
+document.title = process.env.VUE_APP_TITLE || 'Half Dozen - Workflow Automation';
+
 app.use(TelemetryPlugin);
 app.use(PiniaVuePlugin);
 app.use(I18nPlugin);
